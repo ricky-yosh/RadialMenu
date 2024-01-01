@@ -7,32 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		84967F2C2B3E3A3000532342 /* RadialMenuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84967F2B2B3E3A3000532342 /* RadialMenuApp.swift */; };
-		84967F2E2B3E3A3000532342 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84967F2D2B3E3A3000532342 /* ContentView.swift */; };
-		84967F302B3E3A3000532342 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84967F2F2B3E3A3000532342 /* Assets.xcassets */; };
-		84967F332B3E3A3000532342 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84967F322B3E3A3000532342 /* Preview Assets.xcassets */; };
-		84967F352B3E3A3000532342 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84967F342B3E3A3000532342 /* Persistence.swift */; };
-		84967F382B3E3A3100532342 /* RadialMenu.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 84967F362B3E3A3000532342 /* RadialMenu.xcdatamodeld */; };
-		84967F412B3E43C800532342 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84967F402B3E43C800532342 /* AppDelegate.swift */; };
-		84A09A052B3FE9CC0061F094 /* FullScreenWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A09A042B3FE9CC0061F094 /* FullScreenWindow.swift */; };
+		84DEB76C2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DEB76B2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift */; };
+		84DEB76E2B40CBB1001D177E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DEB76D2B40CBB1001D177E /* ContentView.swift */; };
+		84DEB7702B40CBB1001D177E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84DEB76F2B40CBB1001D177E /* Assets.xcassets */; };
+		84DEB7732B40CBB1001D177E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84DEB7722B40CBB1001D177E /* Preview Assets.xcassets */; };
+		84DEB77D2B40E9E6001D177E /* AppMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DEB77C2B40E9E6001D177E /* AppMenu.swift */; };
+		84DEB7812B425887001D177E /* WeaponWheel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DEB7802B425887001D177E /* WeaponWheel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		84967F282B3E3A3000532342 /* RadialMenu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RadialMenu.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		84967F2B2B3E3A3000532342 /* RadialMenuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadialMenuApp.swift; sourceTree = "<group>"; };
-		84967F2D2B3E3A3000532342 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		84967F2F2B3E3A3000532342 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		84967F322B3E3A3000532342 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		84967F342B3E3A3000532342 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
-		84967F372B3E3A3000532342 /* RadialMenu.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = RadialMenu.xcdatamodel; sourceTree = "<group>"; };
-		84967F392B3E3A3100532342 /* RadialMenu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RadialMenu.entitlements; sourceTree = "<group>"; };
-		84967F402B3E43C800532342 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		84A09A042B3FE9CC0061F094 /* FullScreenWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScreenWindow.swift; sourceTree = "<group>"; };
-		84A09A062B3FF3220061F094 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		84DEB7682B40CBB0001D177E /* SpotlightReplicaTesting.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpotlightReplicaTesting.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		84DEB76B2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightReplicaTestingApp.swift; sourceTree = "<group>"; };
+		84DEB76D2B40CBB1001D177E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		84DEB76F2B40CBB1001D177E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		84DEB7722B40CBB1001D177E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		84DEB7742B40CBB1001D177E /* SpotlightReplicaTesting.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SpotlightReplicaTesting.entitlements; sourceTree = "<group>"; };
+		84DEB77A2B40DF79001D177E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		84DEB77C2B40E9E6001D177E /* AppMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMenu.swift; sourceTree = "<group>"; };
+		84DEB7802B425887001D177E /* WeaponWheel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponWheel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		84967F252B3E3A3000532342 /* Frameworks */ = {
+		84DEB7652B40CBB0001D177E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -42,51 +38,49 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		84967F1F2B3E3A2F00532342 = {
+		84DEB75F2B40CBB0001D177E = {
 			isa = PBXGroup;
 			children = (
-				84967F2A2B3E3A3000532342 /* RadialMenu */,
-				84967F292B3E3A3000532342 /* Products */,
+				84DEB76A2B40CBB0001D177E /* SpotlightReplicaTesting */,
+				84DEB7692B40CBB0001D177E /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		84967F292B3E3A3000532342 /* Products */ = {
+		84DEB7692B40CBB0001D177E /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				84967F282B3E3A3000532342 /* RadialMenu.app */,
+				84DEB7682B40CBB0001D177E /* SpotlightReplicaTesting.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		84967F2A2B3E3A3000532342 /* RadialMenu */ = {
+		84DEB76A2B40CBB0001D177E /* SpotlightReplicaTesting */ = {
 			isa = PBXGroup;
 			children = (
-				84A09A062B3FF3220061F094 /* Info.plist */,
-				84967F2B2B3E3A3000532342 /* RadialMenuApp.swift */,
-				84967F402B3E43C800532342 /* AppDelegate.swift */,
-				84A09A042B3FE9CC0061F094 /* FullScreenWindow.swift */,
-				84967F3F2B3E41F200532342 /* Views */,
-				84967F2D2B3E3A3000532342 /* ContentView.swift */,
-				84967F2F2B3E3A3000532342 /* Assets.xcassets */,
-				84967F342B3E3A3000532342 /* Persistence.swift */,
-				84967F392B3E3A3100532342 /* RadialMenu.entitlements */,
-				84967F362B3E3A3000532342 /* RadialMenu.xcdatamodeld */,
-				84967F312B3E3A3000532342 /* Preview Content */,
+				84DEB77A2B40DF79001D177E /* Info.plist */,
+				84DEB76B2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift */,
+				84DEB77B2B40E9CF001D177E /* Views */,
+				84DEB76F2B40CBB1001D177E /* Assets.xcassets */,
+				84DEB7742B40CBB1001D177E /* SpotlightReplicaTesting.entitlements */,
+				84DEB7712B40CBB1001D177E /* Preview Content */,
 			);
-			path = RadialMenu;
+			path = SpotlightReplicaTesting;
 			sourceTree = "<group>";
 		};
-		84967F312B3E3A3000532342 /* Preview Content */ = {
+		84DEB7712B40CBB1001D177E /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
-				84967F322B3E3A3000532342 /* Preview Assets.xcassets */,
+				84DEB7722B40CBB1001D177E /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		84967F3F2B3E41F200532342 /* Views */ = {
+		84DEB77B2B40E9CF001D177E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				84DEB76D2B40CBB1001D177E /* ContentView.swift */,
+				84DEB77C2B40E9E6001D177E /* AppMenu.swift */,
+				84DEB7802B425887001D177E /* WeaponWheel.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -94,39 +88,39 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		84967F272B3E3A3000532342 /* RadialMenu */ = {
+		84DEB7672B40CBB0001D177E /* SpotlightReplicaTesting */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 84967F3C2B3E3A3100532342 /* Build configuration list for PBXNativeTarget "RadialMenu" */;
+			buildConfigurationList = 84DEB7772B40CBB1001D177E /* Build configuration list for PBXNativeTarget "SpotlightReplicaTesting" */;
 			buildPhases = (
-				84967F242B3E3A3000532342 /* Sources */,
-				84967F252B3E3A3000532342 /* Frameworks */,
-				84967F262B3E3A3000532342 /* Resources */,
+				84DEB7642B40CBB0001D177E /* Sources */,
+				84DEB7652B40CBB0001D177E /* Frameworks */,
+				84DEB7662B40CBB0001D177E /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = RadialMenu;
-			productName = RadialMenu;
-			productReference = 84967F282B3E3A3000532342 /* RadialMenu.app */;
+			name = SpotlightReplicaTesting;
+			productName = SpotlightReplicaTesting;
+			productReference = 84DEB7682B40CBB0001D177E /* SpotlightReplicaTesting.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		84967F202B3E3A2F00532342 /* Project object */ = {
+		84DEB7602B40CBB0001D177E /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1510;
 				LastUpgradeCheck = 1510;
 				TargetAttributes = {
-					84967F272B3E3A3000532342 = {
+					84DEB7672B40CBB0001D177E = {
 						CreatedOnToolsVersion = 15.1;
 					};
 				};
 			};
-			buildConfigurationList = 84967F232B3E3A2F00532342 /* Build configuration list for PBXProject "RadialMenu" */;
+			buildConfigurationList = 84DEB7632B40CBB0001D177E /* Build configuration list for PBXProject "SpotlightReplicaTesting" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -134,46 +128,44 @@
 				en,
 				Base,
 			);
-			mainGroup = 84967F1F2B3E3A2F00532342;
-			productRefGroup = 84967F292B3E3A3000532342 /* Products */;
+			mainGroup = 84DEB75F2B40CBB0001D177E;
+			productRefGroup = 84DEB7692B40CBB0001D177E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				84967F272B3E3A3000532342 /* RadialMenu */,
+				84DEB7672B40CBB0001D177E /* SpotlightReplicaTesting */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		84967F262B3E3A3000532342 /* Resources */ = {
+		84DEB7662B40CBB0001D177E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84967F332B3E3A3000532342 /* Preview Assets.xcassets in Resources */,
-				84967F302B3E3A3000532342 /* Assets.xcassets in Resources */,
+				84DEB7732B40CBB1001D177E /* Preview Assets.xcassets in Resources */,
+				84DEB7702B40CBB1001D177E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		84967F242B3E3A3000532342 /* Sources */ = {
+		84DEB7642B40CBB0001D177E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84A09A052B3FE9CC0061F094 /* FullScreenWindow.swift in Sources */,
-				84967F352B3E3A3000532342 /* Persistence.swift in Sources */,
-				84967F382B3E3A3100532342 /* RadialMenu.xcdatamodeld in Sources */,
-				84967F2E2B3E3A3000532342 /* ContentView.swift in Sources */,
-				84967F412B3E43C800532342 /* AppDelegate.swift in Sources */,
-				84967F2C2B3E3A3000532342 /* RadialMenuApp.swift in Sources */,
+				84DEB77D2B40E9E6001D177E /* AppMenu.swift in Sources */,
+				84DEB76E2B40CBB1001D177E /* ContentView.swift in Sources */,
+				84DEB76C2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift in Sources */,
+				84DEB7812B425887001D177E /* WeaponWheel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		84967F3A2B3E3A3100532342 /* Debug */ = {
+		84DEB7752B40CBB1001D177E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -236,7 +228,7 @@
 			};
 			name = Debug;
 		};
-		84967F3B2B3E3A3100532342 /* Release */ = {
+		84DEB7762B40CBB1001D177E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -291,52 +283,52 @@
 			};
 			name = Release;
 		};
-		84967F3D2B3E3A3100532342 /* Debug */ = {
+		84DEB7782B40CBB1001D177E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = RadialMenu/RadialMenu.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SpotlightReplicaTesting/SpotlightReplicaTesting.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"RadialMenu/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"SpotlightReplicaTesting/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = RadialMenu/Info.plist;
+				INFOPLIST_FILE = SpotlightReplicaTesting/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.www.RadialMenu;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.www.SpotlightReplicaTesting;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		84967F3E2B3E3A3100532342 /* Release */ = {
+		84DEB7792B40CBB1001D177E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = RadialMenu/RadialMenu.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SpotlightReplicaTesting/SpotlightReplicaTesting.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"RadialMenu/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"SpotlightReplicaTesting/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = RadialMenu/Info.plist;
+				INFOPLIST_FILE = SpotlightReplicaTesting/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.www.RadialMenu;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.www.SpotlightReplicaTesting;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -346,38 +338,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		84967F232B3E3A2F00532342 /* Build configuration list for PBXProject "RadialMenu" */ = {
+		84DEB7632B40CBB0001D177E /* Build configuration list for PBXProject "SpotlightReplicaTesting" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				84967F3A2B3E3A3100532342 /* Debug */,
-				84967F3B2B3E3A3100532342 /* Release */,
+				84DEB7752B40CBB1001D177E /* Debug */,
+				84DEB7762B40CBB1001D177E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		84967F3C2B3E3A3100532342 /* Build configuration list for PBXNativeTarget "RadialMenu" */ = {
+		84DEB7772B40CBB1001D177E /* Build configuration list for PBXNativeTarget "SpotlightReplicaTesting" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				84967F3D2B3E3A3100532342 /* Debug */,
-				84967F3E2B3E3A3100532342 /* Release */,
+				84DEB7782B40CBB1001D177E /* Debug */,
+				84DEB7792B40CBB1001D177E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		84967F362B3E3A3000532342 /* RadialMenu.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				84967F372B3E3A3000532342 /* RadialMenu.xcdatamodel */,
-			);
-			currentVersion = 84967F372B3E3A3000532342 /* RadialMenu.xcdatamodel */;
-			path = RadialMenu.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
-	rootObject = 84967F202B3E3A2F00532342 /* Project object */;
+	rootObject = 84DEB7602B40CBB0001D177E /* Project object */;
 }
