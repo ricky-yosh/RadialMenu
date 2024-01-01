@@ -20,9 +20,17 @@ struct WeaponIcon: View {
 struct WeaponWheel: View {
     let weapons = ["airplane", "airplane", "airplane", "airplane", "airplane", "airplane", "airplane", "airplane"]
     @State private var selectedWeapon: String?
-    let hitAreaWidth: CGFloat = 100 // Width of the hit area
+    let hitAreaWidth: CGFloat = 185 // Width of the hit area
     let hitAreaLength: CGFloat = 400 // Length of the hit area
+    @State private var hoverStates: [Int: Bool] = [:]
 
+    init() {
+        // Initialize all hover states to false
+        for index in 0..<weapons.count {
+            hoverStates[index] = false
+        }
+    }
+    
     var body: some View {
         ZStack {
             ForEach(0..<weapons.count, id: \.self) { index in
@@ -33,18 +41,30 @@ struct WeaponWheel: View {
                                 y: self.calculateYOffset(index: index, radius: 10))
 
                     // Trapezoidal Hit Area
-                    Trapezoid(innerWidth: hitAreaWidth, outerWidth: hitAreaWidth * 1.5, height: hitAreaLength)
-                        .fill(Color.red).opacity(0.2)
+                    Trapezoid(innerWidth: hitAreaWidth * 0.22, outerWidth: hitAreaWidth * 2, height: hitAreaLength)
+                        .fill(hoverStates[index, default: false] ? Color.red : Color.clear).opacity(0.2)
                         .frame(width: hitAreaWidth * 1.5, height: hitAreaLength)
-                        .rotationEffect(Angle(degrees: Double(index) * (360 / Double(weapons.count)) + 270))
-                        .onTapGesture {
-                            self.selectedWeapon = self.weapons[index]
+                        .contentShape(Trapezoid(innerWidth: hitAreaWidth * 0.67, outerWidth: hitAreaWidth * 2, height: hitAreaLength)) // <-- Use contentShape here
+                        .rotationEffect(Angle(degrees: Double(index) * (360 / Double(weapons.count)) + 90))
+                        .onHover { isHovering in
+                            for item in 0..<weapons.count
+                            {
+                                if item == index
+                                {
+                                    hoverStates[item] = isHovering
+                                }
+                                else
+                                {
+                                    hoverStates[item] = false
+                                }
+                            }
                         }
                 }
                 .offset(x: self.calculateXOffset(index: index, radius: 50 + hitAreaLength / 2), // Offset for the entire group
                         y: self.calculateYOffset(index: index, radius: 50 + hitAreaLength / 2))
             }
         }
+        .frame(idealWidth: .infinity, idealHeight: .infinity)
     }
 
     private func calculateXOffset(index: Int, radius: CGFloat) -> CGFloat {
@@ -64,19 +84,23 @@ struct Trapezoid: Shape {
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
-
-        let difference = (outerWidth - innerWidth) / 2
-        let topLeading = CGPoint(x: difference, y: 0)
-        let topTrailing = CGPoint(x: rect.width - difference, y: 0)
-        let bottomLeading = CGPoint(x: 0, y: rect.height)
-        let bottomTrailing = CGPoint(x: rect.width, y: rect.height)
-
+        
+        // Calculate the difference based on the frame of the shape, not the rect
+        _ = (outerWidth - innerWidth) / 2
+        let rectHeight = rect.height
+        
+        // Points for the trapezoid
+        let topLeading = CGPoint(x: rect.midX - innerWidth / 2, y: rectHeight)
+        let topTrailing = CGPoint(x: rect.midX + innerWidth / 2, y: rectHeight)
+        let bottomLeading = CGPoint(x: rect.midX - outerWidth / 2, y: 0)
+        let bottomTrailing = CGPoint(x: rect.midX + outerWidth / 2, y: 0)
+        
         path.move(to: bottomLeading)
         path.addLine(to: topLeading)
         path.addLine(to: topTrailing)
         path.addLine(to: bottomTrailing)
         path.closeSubpath()
-
+        
         return path
     }
 }
@@ -84,5 +108,5 @@ struct Trapezoid: Shape {
 
 #Preview {
     WeaponWheel()
-        .frame(width: 1000, height: 1000) // Adjust as needed
+        .frame(width: 1440, height: 900) // Adjust as needed
 }

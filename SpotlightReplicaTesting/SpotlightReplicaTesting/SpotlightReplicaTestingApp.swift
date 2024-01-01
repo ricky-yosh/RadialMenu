@@ -15,7 +15,6 @@ struct SpotlightReplicaTestingApp: App {
         WindowGroup {
 //            ContentView()
             WeaponWheel()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background {
                     if window == nil {
                         Color.clear.onReceive(NotificationCenter.default.publisher(for:
