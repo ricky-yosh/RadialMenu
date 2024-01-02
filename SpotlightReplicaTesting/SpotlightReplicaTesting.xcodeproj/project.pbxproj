@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		84C5148B2B42A7E40086877F /* TrapezoidView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C5148A2B42A7E40086877F /* TrapezoidView.swift */; };
+		84C5148D2B438A790086877F /* TriangleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C5148C2B438A790086877F /* TriangleView.swift */; };
 		84DEB76C2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DEB76B2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift */; };
 		84DEB76E2B40CBB1001D177E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DEB76D2B40CBB1001D177E /* ContentView.swift */; };
 		84DEB7702B40CBB1001D177E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84DEB76F2B40CBB1001D177E /* Assets.xcassets */; };
@@ -16,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		84C5148A2B42A7E40086877F /* TrapezoidView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrapezoidView.swift; sourceTree = "<group>"; };
+		84C5148C2B438A790086877F /* TriangleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriangleView.swift; sourceTree = "<group>"; };
 		84DEB7682B40CBB0001D177E /* SpotlightReplicaTesting.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpotlightReplicaTesting.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		84DEB76B2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightReplicaTestingApp.swift; sourceTree = "<group>"; };
 		84DEB76D2B40CBB1001D177E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -81,6 +85,8 @@
 				84DEB76D2B40CBB1001D177E /* ContentView.swift */,
 				84DEB77C2B40E9E6001D177E /* AppMenu.swift */,
 				84DEB7802B425887001D177E /* WeaponWheel.swift */,
+				84C5148C2B438A790086877F /* TriangleView.swift */,
+				84C5148A2B42A7E40086877F /* TrapezoidView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -156,8 +162,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				84DEB77D2B40E9E6001D177E /* AppMenu.swift in Sources */,
+				84C5148B2B42A7E40086877F /* TrapezoidView.swift in Sources */,
 				84DEB76E2B40CBB1001D177E /* ContentView.swift in Sources */,
 				84DEB76C2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift in Sources */,
+				84C5148D2B438A790086877F /* TriangleView.swift in Sources */,
 				84DEB7812B425887001D177E /* WeaponWheel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
