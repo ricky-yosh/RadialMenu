@@ -7,19 +7,21 @@
 
 import SwiftUI
 
+var weapons = ["plus", "plus", "plus", "plus", "plus", "plus", "plus", "plus"]
+
 struct WeaponIcon: View {
     var imageName: String
 
     var body: some View {
         Image(systemName: imageName)
             .resizable()
-            .padding(45.0)
-            .frame(width: 125, height: 125) // Adjust size as needed
+            .padding(30.0)
+            .frame(width: 90, height: 90) // Adjust size as needed
     }
 }
 
 struct WeaponWheel: View {
-    let weapons = ["airplane", "airplane", "airplane", "airplane", "airplane", "airplane", "airplane", "airplane"]
+    
     @State private var selectedWeapon: String?
     let hitAreaWidth: CGFloat = 135 // Width of the hit area
     let hitAreaLength: CGFloat = 150 // Length of the hit area
@@ -37,8 +39,8 @@ struct WeaponWheel: View {
             ForEach(0..<weapons.count, id: \.self) { index in
                 Group {
                     // Trapezoidal Hit Area
-                    Trapezoid(innerWidth: hitAreaWidth * 0.297, outerWidth: hitAreaWidth * 1.2, height: hitAreaLength)
-                        .fill(hoverStates[index, default: false] ? Color.red : Color.blue).opacity(0.2)
+                    Trapezoid(innerWidth: hitAreaWidth * 0.309, outerWidth: hitAreaWidth * 1.227, height: hitAreaLength)
+                        .fill(hoverStates[index, default: false] ? Color.blue.opacity(1) : Color.white.opacity(0.5))
                         .frame(width: hitAreaWidth * 1.5, height: hitAreaLength)
                         .rotationEffect(Angle(degrees: Double(index) * (360 / Double(weapons.count)) + 90))
                     
@@ -67,9 +69,9 @@ struct WeaponWheel: View {
                         y: self.calculateYOffset(index: index, radius: 50 + hitAreaLength / 2)) // Change circle radius
             }
         }
-//        .frame(idealWidth: .infinity, idealHeight: .infinity)
+        .frame(width: 500, height: 500)
     }
-
+    
     private func calculateXOffset(index: Int, radius: CGFloat) -> CGFloat {
         let angle = Double(index) * (2 * .pi / Double(weapons.count))
         return radius * cos(CGFloat(angle))
@@ -82,5 +84,5 @@ struct WeaponWheel: View {
 
 #Preview {
     WeaponWheel()
-        .frame(width: 1440, height: 900) // Adjust as needed
+        .frame(width: 420, height: 420) // Adjust as needed
 }
