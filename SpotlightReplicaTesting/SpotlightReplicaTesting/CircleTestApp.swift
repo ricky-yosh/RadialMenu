@@ -75,10 +75,42 @@ class WindowController: NSWindowController {
     private func setupEventMonitor() {
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged]) { [weak self] event in
             if event.modifierFlags.contains([.option, .command]) {
+                self?.moveWindowToCursor()
                 self?.window?.orderFrontRegardless()
             } else {
                 self?.window?.orderOut(nil)
             }
+        }
+    }
+
+    private func moveWindowToCursor() {
+        let mouseLocation = NSEvent.mouseLocation
+        if let screen = NSScreen.main {
+            let screenRect = screen.frame
+            let windowSize = self.window?.frame.size ?? CGSize.zero
+            var newOriginX = mouseLocation.x - windowSize.width / 2
+            // Add safe area x-acis
+            if (newOriginX > (screenRect.maxX - windowSize.width))
+            {
+                newOriginX = screenRect.maxX - windowSize.width
+            }
+            else if (newOriginX < screenRect.minX)
+            {
+                newOriginX = screenRect.minX
+            }
+            var newOriginY = mouseLocation.y - windowSize.height / 2
+            // Add safe area y-axis
+            if (newOriginY > (screenRect.maxY - windowSize.height))
+            {
+                newOriginY = screenRect.maxY - windowSize.height
+            }
+            else if (newOriginY < screenRect.minY)
+            {
+                newOriginY = screenRect.minY
+            }
+            let newOrigin = CGPoint(x: newOriginX,
+                                    y: newOriginY)
+            self.window?.setFrameOrigin(newOrigin)
         }
     }
 }
