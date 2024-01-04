@@ -11,6 +11,7 @@ import AppKit
 @main
 struct CircleOverlayTest: App {
     var windowController: WindowController?
+    var shortcutManager: ShortcutManager
 
     var body: some Scene {
         MenuBarExtra("Utility App", systemImage: "hammer") {
@@ -35,9 +36,12 @@ struct CircleOverlayTest: App {
 //    }
     
     init() {
-        let contentView = NSHostingView(rootView: WeaponWheel2())
-        windowController = WindowController(contentView: contentView)
-        windowController?.window?.makeKeyAndOrderFront(nil)
+        // Initialize the ShortcutManager with the appropriate count
+        self.shortcutManager = ShortcutManager(count: weapons.count)
+
+        // Pass the ShortcutManager instance to the WindowController
+        let contentView = NSHostingView(rootView: WeaponWheel2(shortcutManager: shortcutManager))
+        windowController = WindowController(contentView: contentView, shortcutManager: shortcutManager)
     }
 }
 
@@ -52,8 +56,18 @@ struct CircleView: View {
 
 class WindowController: NSWindowController {
     private var eventMonitor: Any?
+    var shortcutManager: ShortcutManager
 
-    init(contentView: NSView) {
+    override func windowDidLoad() {
+        super.windowDidLoad()
+        
+        // Set the window to appear on the current active space (desktop)
+        self.window?.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+    }
+    
+    init(contentView: NSView, shortcutManager: ShortcutManager)
+    {
+        self.shortcutManager = shortcutManager
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 500, height: 500),
             styleMask: [.borderless],
@@ -74,16 +88,23 @@ class WindowController: NSWindowController {
 
     private func setupEventMonitor() {
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged]) { [weak self] event in
-            if event.modifierFlags.contains([.option, .command]) {
+            if event.modifierFlags.contains([.option, .command])
+            {
                 self?.moveWindowToCursor()
                 self?.window?.orderFrontRegardless()
-            } else {
+            }
+            else
+            {
+                self?.shortcutManager.updateHoverStates(active: false)
                 self?.window?.orderOut(nil)
             }
         }
     }
 
     private func moveWindowToCursor() {
+        // Ensure the window appears on the current active space (desktop)
+        self.window?.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
+
         let mouseLocation = NSEvent.mouseLocation
         if let screen = NSScreen.main {
             let screenRect = screen.frame

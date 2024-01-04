@@ -48,20 +48,35 @@ struct SpotlightReplicaTestingApp: App {
     }
 }
 
+class ShortcutManager: ObservableObject {
+    @Published var hoverStates: [Int: Bool] = [:]
 
-struct WeaponWheel2: View {
-    
-    @State private var selectedWeapon: String?
-    let hitAreaWidth: CGFloat = 135 // Width of the hit area
-    let hitAreaLength: CGFloat = 150 // Length of the hit area
-    @State public var hoverStates: [Int: Bool] = [:]
-    
-    init() {
-        // Initialize all hover states to false
-        for index in 0..<weapons.count {
+    init(count: Int) {
+        for index in 0..<count {
             hoverStates[index] = false
         }
     }
+
+    func updateHoverStates(active: Bool) {
+        for index in 0..<hoverStates.count {
+            hoverStates[index] = active
+        }
+    }
+}
+
+//var hoverStates2: [Int: Bool] = [:]
+struct WeaponWheel2: View {
+    @State private var selectedWeapon: String?
+    let hitAreaWidth: CGFloat = 135 // Width of the hit area
+    let hitAreaLength: CGFloat = 150 // Length of the hit area
+    @ObservedObject var shortcutManager = ShortcutManager(count: weapons.count)
+    
+//    init() {
+//        // Initialize all hover states to false
+//        for index in 0..<weapons.count {
+//            self.hoverStates[index] = hoverStates2[index]
+//        }
+//    }
     
     var body: some View {
         ZStack {
@@ -69,7 +84,7 @@ struct WeaponWheel2: View {
                 Group {
                     // Trapezoidal Hit Area
                     Circle()
-                        .fill(hoverStates[index, default: false] ? Color.blue.opacity(1) : Color.white.opacity(0.5))
+                        .fill(shortcutManager.hoverStates[index, default: false] ? Color.blue.opacity(1) : Color.white.opacity(0.5))
                         .frame(width: hitAreaWidth/1.5)
                         .rotationEffect(Angle(degrees: Double(index) * (360 / Double(weapons.count)) + 90))
                     
@@ -83,11 +98,11 @@ struct WeaponWheel2: View {
                             {
                                 if item == index
                                 {
-                                    hoverStates[item] = true
+                                    shortcutManager.hoverStates[item] = true
                                 }
                                 else
                                 {
-                                    hoverStates[item] = false
+                                    shortcutManager.hoverStates[item] = false
                                 }
                             }
                         }
