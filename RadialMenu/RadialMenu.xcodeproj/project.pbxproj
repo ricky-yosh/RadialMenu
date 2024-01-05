@@ -7,25 +7,33 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		842168E62B47CA1C0047D677 /* AppMenuBarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E52B47CA1C0047D677 /* AppMenuBarItem.swift */; };
+		842168E82B47CF5D0047D677 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E72B47CF5D0047D677 /* WindowController.swift */; };
+		842168EA2B47CF9A0047D677 /* ShortcutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E92B47CF9A0047D677 /* ShortcutManager.swift */; };
+		842168EC2B47D1470047D677 /* RadialMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168EB2B47D1470047D677 /* RadialMenuView.swift */; };
+		842168EE2B47D45B0047D677 /* AppIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168ED2B47D45B0047D677 /* AppIcon.swift */; };
+		842168F02B47D8B20047D677 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168EF2B47D8B20047D677 /* AppSettings.swift */; };
 		84967F2C2B3E3A3000532342 /* RadialMenuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84967F2B2B3E3A3000532342 /* RadialMenuApp.swift */; };
-		84967F2E2B3E3A3000532342 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84967F2D2B3E3A3000532342 /* ContentView.swift */; };
 		84967F302B3E3A3000532342 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84967F2F2B3E3A3000532342 /* Assets.xcassets */; };
 		84967F332B3E3A3000532342 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84967F322B3E3A3000532342 /* Preview Assets.xcassets */; };
 		84967F352B3E3A3000532342 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84967F342B3E3A3000532342 /* Persistence.swift */; };
 		84967F382B3E3A3100532342 /* RadialMenu.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 84967F362B3E3A3000532342 /* RadialMenu.xcdatamodeld */; };
-		84A09A052B3FE9CC0061F094 /* FullScreenWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A09A042B3FE9CC0061F094 /* FullScreenWindow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		842168E52B47CA1C0047D677 /* AppMenuBarItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMenuBarItem.swift; sourceTree = "<group>"; };
+		842168E72B47CF5D0047D677 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
+		842168E92B47CF9A0047D677 /* ShortcutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutManager.swift; sourceTree = "<group>"; };
+		842168EB2B47D1470047D677 /* RadialMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadialMenuView.swift; sourceTree = "<group>"; };
+		842168ED2B47D45B0047D677 /* AppIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIcon.swift; sourceTree = "<group>"; };
+		842168EF2B47D8B20047D677 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		84967F282B3E3A3000532342 /* RadialMenu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RadialMenu.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		84967F2B2B3E3A3000532342 /* RadialMenuApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadialMenuApp.swift; sourceTree = "<group>"; };
-		84967F2D2B3E3A3000532342 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		84967F2F2B3E3A3000532342 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		84967F322B3E3A3000532342 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		84967F342B3E3A3000532342 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		84967F372B3E3A3000532342 /* RadialMenu.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = RadialMenu.xcdatamodel; sourceTree = "<group>"; };
 		84967F392B3E3A3100532342 /* RadialMenu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RadialMenu.entitlements; sourceTree = "<group>"; };
-		84A09A042B3FE9CC0061F094 /* FullScreenWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullScreenWindow.swift; sourceTree = "<group>"; };
 		84A09A062B3FF3220061F094 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -61,9 +69,7 @@
 			children = (
 				84A09A062B3FF3220061F094 /* Info.plist */,
 				84967F2B2B3E3A3000532342 /* RadialMenuApp.swift */,
-				84A09A042B3FE9CC0061F094 /* FullScreenWindow.swift */,
 				84967F3F2B3E41F200532342 /* Views */,
-				84967F2D2B3E3A3000532342 /* ContentView.swift */,
 				84967F2F2B3E3A3000532342 /* Assets.xcassets */,
 				84967F342B3E3A3000532342 /* Persistence.swift */,
 				84967F392B3E3A3100532342 /* RadialMenu.entitlements */,
@@ -84,6 +90,12 @@
 		84967F3F2B3E41F200532342 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				842168E52B47CA1C0047D677 /* AppMenuBarItem.swift */,
+				842168E72B47CF5D0047D677 /* WindowController.swift */,
+				842168E92B47CF9A0047D677 /* ShortcutManager.swift */,
+				842168EB2B47D1470047D677 /* RadialMenuView.swift */,
+				842168ED2B47D45B0047D677 /* AppIcon.swift */,
+				842168EF2B47D8B20047D677 /* AppSettings.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -158,10 +170,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84A09A052B3FE9CC0061F094 /* FullScreenWindow.swift in Sources */,
 				84967F352B3E3A3000532342 /* Persistence.swift in Sources */,
+				842168EA2B47CF9A0047D677 /* ShortcutManager.swift in Sources */,
+				842168E82B47CF5D0047D677 /* WindowController.swift in Sources */,
+				842168E62B47CA1C0047D677 /* AppMenuBarItem.swift in Sources */,
 				84967F382B3E3A3100532342 /* RadialMenu.xcdatamodeld in Sources */,
-				84967F2E2B3E3A3000532342 /* ContentView.swift in Sources */,
+				842168F02B47D8B20047D677 /* AppSettings.swift in Sources */,
+				842168EC2B47D1470047D677 /* RadialMenuView.swift in Sources */,
+				842168EE2B47D45B0047D677 /* AppIcon.swift in Sources */,
 				84967F2C2B3E3A3000532342 /* RadialMenuApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

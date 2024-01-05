@@ -9,7 +9,7 @@ import SwiftUI
 
 var weapons = ["plus", "plus", "plus", "plus", "plus", "plus", "plus", "plus"]
 
-struct WeaponIcon: View {
+struct WeaponIcon: View{
     var imageName: String
 
     var body: some View {
@@ -72,17 +72,20 @@ struct WeaponWheel: View {
         .frame(width: 500, height: 500)
     }
     
-    private func calculateXOffset(index: Int, radius: CGFloat) -> CGFloat {
+    private func calculateXOffset(index: Int, radius: CGFloat) -> CGFloat
+    {
         let angle = Double(index) * (2 * .pi / Double(weapons.count))
         return radius * cos(CGFloat(angle))
     }
 
-    private func calculateYOffset(index: Int, radius: CGFloat) -> CGFloat {
+    private func calculateYOffset(index: Int, radius: CGFloat) -> CGFloat
+    {
         let angle = Double(index) * (2 * .pi / Double(weapons.count))
         return radius * sin(CGFloat(angle))
     }}
 
-#Preview {
+#Preview
+{
     WeaponWheel()
         .frame(width: 420, height: 420) // Adjust as needed
 }

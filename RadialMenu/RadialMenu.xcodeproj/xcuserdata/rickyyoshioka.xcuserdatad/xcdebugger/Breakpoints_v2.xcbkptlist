@@ -82,5 +82,69 @@
             </Locations>
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "46FD7750-F5C1-4522-A3FF-AF11F5ECB363"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "RadialMenu/RadialMenuApp.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "24"
+            endingLineNumber = "24"
+            landmarkName = "init()"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "DD4EB41F-2B8A-4270-ADE0-58308D668A6E"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "RadialMenu/Views/WindowController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "55"
+            endingLineNumber = "55"
+            landmarkName = "setupEventMonitor()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "DD4EB41F-2B8A-4270-ADE0-58308D668A6E - e9a88f96bcc2f9eb"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "RadialMenu.WindowController.setupEventMonitor() -&gt; ()"
+                  moduleName = "RadialMenu"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/rickyyoshioka/repos/RadialMenu/RadialMenu/RadialMenu/Views/WindowController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "50"
+                  endingLineNumber = "50"
+                  offsetFromSymbolStart = "184">
+               </Location>
+               <Location
+                  uuid = "DD4EB41F-2B8A-4270-ADE0-58308D668A6E - fdc800f71800a5fc"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (__C.NSEvent) -&gt; () in RadialMenu.WindowController.setupEventMonitor() -&gt; ()"
+                  moduleName = "RadialMenu"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/rickyyoshioka/repos/RadialMenu/RadialMenu/RadialMenu/Views/WindowController.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "50"
+                  endingLineNumber = "50"
+                  offsetFromSymbolStart = "296">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>
