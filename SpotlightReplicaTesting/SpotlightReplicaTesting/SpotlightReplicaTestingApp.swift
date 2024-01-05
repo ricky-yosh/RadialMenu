@@ -128,7 +128,12 @@ struct WeaponWheel2: View {
     
 }
 
-    #Preview {
-        WeaponWheel2()
-            .frame(width: 420, height: 420) // Adjust as needed
-    }
+struct ApplicationToOpen {
+    let name: String
+    let bundleID: String
+}
+
+#Preview {
+    WeaponWheel2()
+        .frame(width: 420, height: 420) // Adjust as needed
+}

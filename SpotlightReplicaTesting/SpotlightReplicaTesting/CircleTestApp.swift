@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import EventKit
 
 @main
 struct CircleOverlayTest: App {
@@ -18,6 +19,7 @@ struct CircleOverlayTest: App {
             AppMenu()
         }
     }
+    
 
 //    init() {
 //        let contentView = WeaponWheel2() // Your SwiftUI circle view
@@ -87,6 +89,17 @@ class WindowController: NSWindowController {
     }
 
     private func setupEventMonitor() {
+        let appPaths: [String?] = [
+            "/Applications/Safari.app",
+            "/Applications/Mail.app",
+            "/Applications/Calendar.app",
+            "/Applications/Obsidian.app",
+            "/Applications/Arc.app",
+            "/Applications/iTerm.app",
+            "/Applications/Xcode.app",
+            nil
+        ]
+        
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged]) { [weak self] event in
             if event.modifierFlags.contains([.option, .command])
             {
@@ -95,10 +108,41 @@ class WindowController: NSWindowController {
             }
             else
             {
+                let hoverStatus: Int? = self?.checkHoverStates(statusArray: (self?.shortcutManager.hoverStates)!)
+                // check if it is empty
+                if (hoverStatus != nil)
+                {
+                    let chosenAppPath: String? = appPaths[hoverStatus!]
+                    if (chosenAppPath != nil)
+                    // if it is an application open it
+                    {
+                        print(chosenAppPath!)
+                        self?.openAppFromPath(appPath: chosenAppPath!)
+                    }
+                }
+                
+                // clear highlighted point
                 self?.shortcutManager.updateHoverStates(active: false)
                 self?.window?.orderOut(nil)
             }
         }
+    }
+    
+    private func openAppFromPath(appPath: String) {
+        let workspace = NSWorkspace.shared
+        workspace.open(URL(fileURLWithPath: appPath))
+    }
+    
+    private func checkHoverStates(statusArray: [Int: Bool]) -> Int? {
+        var indexHovered: Int? = nil
+        for (applicationIndex, hoverStatus) in statusArray {
+            if hoverStatus
+            {
+                indexHovered = applicationIndex
+                return indexHovered
+            }
+        }
+        return indexHovered
     }
 
     private func moveWindowToCursor() {

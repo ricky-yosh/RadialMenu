@@ -3,6 +3,14 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "closure #1 in WindowController.setupEventMonitor():CircleTestApp.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "self?.shortcutManager.hoverStates">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "closure #1 in closure #1 in closure #1 in closure #1 in WeaponWheel.body.getter:WeaponWheel.swift">
          <PersistentStrings>
             <PersistentString

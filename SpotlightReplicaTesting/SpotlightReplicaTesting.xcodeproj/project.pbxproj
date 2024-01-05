@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		842168E02B4525950047D677 /* CircleOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168DF2B4525950047D677 /* CircleOverlay.swift */; };
 		842168E22B4525B70047D677 /* CircleTestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E12B4525B70047D677 /* CircleTestApp.swift */; };
+		842168E42B472C270047D677 /* AppleScriptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E32B472C270047D677 /* AppleScriptTests.swift */; };
 		84AF4EB72B45109B009AAFF6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AF4EB62B45109B009AAFF6 /* AppDelegate.swift */; };
 		84C5148B2B42A7E40086877F /* TrapezoidView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C5148A2B42A7E40086877F /* TrapezoidView.swift */; };
 		84C5148D2B438A790086877F /* TriangleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C5148C2B438A790086877F /* TriangleView.swift */; };
@@ -23,6 +24,7 @@
 /* Begin PBXFileReference section */
 		842168DF2B4525950047D677 /* CircleOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleOverlay.swift; sourceTree = "<group>"; };
 		842168E12B4525B70047D677 /* CircleTestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleTestApp.swift; sourceTree = "<group>"; };
+		842168E32B472C270047D677 /* AppleScriptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleScriptTests.swift; sourceTree = "<group>"; };
 		84AF4EB62B45109B009AAFF6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		84C5148A2B42A7E40086877F /* TrapezoidView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrapezoidView.swift; sourceTree = "<group>"; };
 		84C5148C2B438A790086877F /* TriangleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriangleView.swift; sourceTree = "<group>"; };
@@ -69,6 +71,7 @@
 			children = (
 				84DEB77A2B40DF79001D177E /* Info.plist */,
 				84DEB76B2B40CBB1001D177E /* SpotlightReplicaTestingApp.swift */,
+				842168E32B472C270047D677 /* AppleScriptTests.swift */,
 				84AF4EB62B45109B009AAFF6 /* AppDelegate.swift */,
 				842168DF2B4525950047D677 /* CircleOverlay.swift */,
 				842168E12B4525B70047D677 /* CircleTestApp.swift */,
@@ -179,6 +182,7 @@
 				84AF4EB72B45109B009AAFF6 /* AppDelegate.swift in Sources */,
 				84C5148D2B438A790086877F /* TriangleView.swift in Sources */,
 				84DEB7812B425887001D177E /* WeaponWheel.swift in Sources */,
+				842168E42B472C270047D677 /* AppleScriptTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,6 +320,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SpotlightReplicaTesting/Info.plist;
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "To open Calendar.app";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -342,6 +348,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SpotlightReplicaTesting/Info.plist;
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "To open Calendar.app";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -115,5 +115,53 @@
             </Locations>
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F5BB7588-D7F6-45A0-B3F4-FD928A91864B"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "SpotlightReplicaTesting/CircleTestApp.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "115"
+            endingLineNumber = "115"
+            landmarkName = "setupEventMonitor()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "F5BB7588-D7F6-45A0-B3F4-FD928A91864B - 65f406765f03f769"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (__C.NSEvent) -&gt; () in SpotlightReplicaTesting.WindowController.setupEventMonitor() -&gt; ()"
+                  moduleName = "SpotlightReplicaTesting"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/rickyyoshioka/repos/RadialMenu/SpotlightReplicaTesting/SpotlightReplicaTesting/CircleTestApp.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "114"
+                  endingLineNumber = "114"
+                  offsetFromSymbolStart = "1444">
+               </Location>
+               <Location
+                  uuid = "F5BB7588-D7F6-45A0-B3F4-FD928A91864B - 65f406765f03f748"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (__C.NSEvent) -&gt; () in SpotlightReplicaTesting.WindowController.setupEventMonitor() -&gt; ()"
+                  moduleName = "SpotlightReplicaTesting"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/rickyyoshioka/repos/RadialMenu/SpotlightReplicaTesting/SpotlightReplicaTesting/CircleTestApp.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "113"
+                  endingLineNumber = "113"
+                  offsetFromSymbolStart = "1264">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>
