@@ -31,3 +31,8 @@ func fetchAppIcons(appPaths: [String?]) -> [NSImage] {
 }
 
 let appPathIcons = fetchAppIcons(appPaths: appPaths)
+
+
+class AppSettings: ObservableObject {
+    @Published var isShortcutEnabled: Bool = false
+}

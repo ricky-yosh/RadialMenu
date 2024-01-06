@@ -11,6 +11,8 @@ import SwiftUI
 
 class WindowController: NSWindowController
 {
+    var settings = AppSettings()
+
     private var eventMonitor: Any?
     var shortcutManager: ShortcutManager
 
@@ -22,8 +24,9 @@ class WindowController: NSWindowController
         self.window?.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
     }
     
-    init(contentView: NSView, shortcutManager: ShortcutManager)
+    init(contentView: NSView, shortcutManager: ShortcutManager, settings: AppSettings)
     {
+        self.settings = settings
         self.shortcutManager = shortcutManager
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 500, height: 500),
@@ -50,7 +53,7 @@ class WindowController: NSWindowController
     private func setupEventMonitor()
     {
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged]) { [weak self] event in
-            if event.modifierFlags.contains([.option, .command])
+            if event.modifierFlags.contains([.option, .command]) && self!.settings.isShortcutEnabled // shortcut detection
             {
                 self?.moveWindowToCursor()
                 self?.window?.orderFrontRegardless()
@@ -65,7 +68,6 @@ class WindowController: NSWindowController
                     if (chosenAppPath != nil)
                     // if it is an application open it
                     {
-                        print(chosenAppPath!)
                         self?.openAppFromPath(appPath: chosenAppPath!)
                     }
                 }

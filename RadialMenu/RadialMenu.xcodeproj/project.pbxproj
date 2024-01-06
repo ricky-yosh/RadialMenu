@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		842168E62B47CA1C0047D677 /* AppMenuBarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E52B47CA1C0047D677 /* AppMenuBarItem.swift */; };
+		842168E62B47CA1C0047D677 /* AppMenuBarItems.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E52B47CA1C0047D677 /* AppMenuBarItems.swift */; };
 		842168E82B47CF5D0047D677 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E72B47CF5D0047D677 /* WindowController.swift */; };
 		842168EA2B47CF9A0047D677 /* ShortcutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168E92B47CF9A0047D677 /* ShortcutManager.swift */; };
 		842168EC2B47D1470047D677 /* RadialMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842168EB2B47D1470047D677 /* RadialMenuView.swift */; };
@@ -21,7 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		842168E52B47CA1C0047D677 /* AppMenuBarItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMenuBarItem.swift; sourceTree = "<group>"; };
+		842168E52B47CA1C0047D677 /* AppMenuBarItems.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMenuBarItems.swift; sourceTree = "<group>"; };
 		842168E72B47CF5D0047D677 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
 		842168E92B47CF9A0047D677 /* ShortcutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutManager.swift; sourceTree = "<group>"; };
 		842168EB2B47D1470047D677 /* RadialMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadialMenuView.swift; sourceTree = "<group>"; };
@@ -90,7 +90,7 @@
 		84967F3F2B3E41F200532342 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				842168E52B47CA1C0047D677 /* AppMenuBarItem.swift */,
+				842168E52B47CA1C0047D677 /* AppMenuBarItems.swift */,
 				842168E72B47CF5D0047D677 /* WindowController.swift */,
 				842168E92B47CF9A0047D677 /* ShortcutManager.swift */,
 				842168EB2B47D1470047D677 /* RadialMenuView.swift */,
@@ -173,7 +173,7 @@
 				84967F352B3E3A3000532342 /* Persistence.swift in Sources */,
 				842168EA2B47CF9A0047D677 /* ShortcutManager.swift in Sources */,
 				842168E82B47CF5D0047D677 /* WindowController.swift in Sources */,
-				842168E62B47CA1C0047D677 /* AppMenuBarItem.swift in Sources */,
+				842168E62B47CA1C0047D677 /* AppMenuBarItems.swift in Sources */,
 				84967F382B3E3A3100532342 /* RadialMenu.xcdatamodeld in Sources */,
 				842168F02B47D8B20047D677 /* AppSettings.swift in Sources */,
 				842168EC2B47D1470047D677 /* RadialMenuView.swift in Sources */,

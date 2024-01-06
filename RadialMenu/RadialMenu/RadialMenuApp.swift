@@ -11,10 +11,11 @@ import SwiftUI
 struct RadialMenuApp: App {
     var windowController: WindowController?
     var shortcutManager: ShortcutManager
-    
+    var settings = AppSettings()
+
     var body: some Scene {
         MenuBarExtra("Radial Menu App", systemImage: "circle.dashed") {
-            AppMenuBarItem()
+            AppMenuBarItems(settings: settings)
         }
     }
     
@@ -25,6 +26,6 @@ struct RadialMenuApp: App {
 
         // Pass the ShortcutManager instance to the WindowController
         let contentView = NSHostingView(rootView: RadialMenuView(shortcutManager: shortcutManager))
-        windowController = WindowController(contentView: contentView, shortcutManager: shortcutManager)
+        windowController = WindowController(contentView: contentView, shortcutManager: shortcutManager, settings: settings)
     }
 }
