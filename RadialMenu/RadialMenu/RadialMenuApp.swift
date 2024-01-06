@@ -17,6 +17,9 @@ struct RadialMenuApp: App {
         MenuBarExtra("Radial Menu App", systemImage: "circle.dashed") {
             AppMenuBarItems(settings: settings)
         }
+        WindowGroup(id: "setting-window") {
+            SettingsView()
+        }
     }
     
     init()
