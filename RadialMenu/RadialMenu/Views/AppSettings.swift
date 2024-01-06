@@ -7,16 +7,7 @@
 
 import SwiftUI
 
-var appPaths: [String?] = [
-    "/Applications/Safari.app",
-    "/Applications/Mail.app",
-    "/Applications/Calendar.app",
-    "/Applications/Obsidian.app",
-    "/Applications/Arc.app",
-    "/Applications/iTerm.app",
-    "/Applications/Xcode.app",
-    nil
-]
+var appPaths: [String?] = [nil, nil, nil, nil, nil, nil, nil, nil]
 
 func fetchAppIcons(appPaths: [String?]) -> [NSImage] {
     let workspace = NSWorkspace.shared
