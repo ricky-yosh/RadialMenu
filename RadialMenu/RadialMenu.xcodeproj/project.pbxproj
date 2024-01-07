@@ -18,6 +18,7 @@
 		84967F332B3E3A3000532342 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84967F322B3E3A3000532342 /* Preview Assets.xcassets */; };
 		84967F352B3E3A3000532342 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84967F342B3E3A3000532342 /* Persistence.swift */; };
 		84967F382B3E3A3100532342 /* RadialMenu.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 84967F362B3E3A3000532342 /* RadialMenu.xcdatamodeld */; };
+		84EA25782B4A1538001B169F /* FileDialogPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84EA25772B4A1538001B169F /* FileDialogPickerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		84967F372B3E3A3000532342 /* RadialMenu.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = RadialMenu.xcdatamodel; sourceTree = "<group>"; };
 		84967F392B3E3A3100532342 /* RadialMenu.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RadialMenu.entitlements; sourceTree = "<group>"; };
 		84A09A062B3FF3220061F094 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		84EA25772B4A1538001B169F /* FileDialogPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDialogPickerView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +98,7 @@
 				842168EB2B47D1470047D677 /* RadialMenuView.swift */,
 				842168ED2B47D45B0047D677 /* AppIcon.swift */,
 				842168EF2B47D8B20047D677 /* AppSettings.swift */,
+				84EA25772B4A1538001B169F /* FileDialogPickerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -178,6 +181,7 @@
 				842168F02B47D8B20047D677 /* AppSettings.swift in Sources */,
 				842168EC2B47D1470047D677 /* RadialMenuView.swift in Sources */,
 				842168EE2B47D45B0047D677 /* AppIcon.swift in Sources */,
+				84EA25782B4A1538001B169F /* FileDialogPickerView.swift in Sources */,
 				84967F2C2B3E3A3000532342 /* RadialMenuApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

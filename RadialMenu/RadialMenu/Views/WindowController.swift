@@ -6,11 +6,10 @@
 //
 
 import SwiftUI
-//import AppKit
-//import EventKit
 
 class WindowController: NSWindowController
 {
+    var appData: AppData
     var settings = AppSettings()
 
     private var eventMonitor: Any?
@@ -24,8 +23,9 @@ class WindowController: NSWindowController
         self.window?.collectionBehavior = [.moveToActiveSpace, .fullScreenAuxiliary]
     }
     
-    init(contentView: NSView, shortcutManager: ShortcutManager, settings: AppSettings)
+    init(contentView: NSView, shortcutManager: ShortcutManager, settings: AppSettings, appData: AppData)
     {
+        self.appData = appData
         self.settings = settings
         self.shortcutManager = shortcutManager
         let window = NSWindow(
@@ -64,11 +64,12 @@ class WindowController: NSWindowController
                 // check if it is empty
                 if (hoverStatus != nil)
                 {
-                    let chosenAppPath: String? = appPaths[hoverStatus!]
+                    let appInfo = self!.appData
+                    let chosenAppPath: URL? = appInfo.appPaths[hoverStatus!]
                     if (chosenAppPath != nil)
                     // if it is an application open it
                     {
-                        self?.openAppFromPath(appPath: chosenAppPath!)
+                        self?.openAppFromPath(appPath: chosenAppPath!.path())
                     }
                 }
                 

@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+let sharedAppData = AppData()
+
 @main
 struct RadialMenuApp: App {
     var windowController: WindowController?
@@ -16,19 +18,25 @@ struct RadialMenuApp: App {
     var body: some Scene {
         MenuBarExtra("Radial Menu App", systemImage: "circle.dashed") {
             AppMenuBarItems(settings: settings)
+                .environmentObject(sharedAppData)  // Provide to keep track of app shortcuts
         }
-        WindowGroup(id: "setting-window") {
+        Settings {
             SettingsView()
+                .environmentObject(sharedAppData)  // Provide to keep track of app shortcuts
         }
     }
     
     init()
     {
-        // Initialize the ShortcutManager with the appropriate count
-        self.shortcutManager = ShortcutManager(count: appPaths.count)
+        self.shortcutManager = ShortcutManager(appData: sharedAppData) // Use the shared instance
 
-        // Pass the ShortcutManager instance to the WindowController
-        let contentView = NSHostingView(rootView: RadialMenuView(shortcutManager: shortcutManager))
-        windowController = WindowController(contentView: contentView, shortcutManager: shortcutManager, settings: settings)
+        // Create the SwiftUI view with the environment object
+        let shortcutManager = ShortcutManager(appData: sharedAppData)
+        let radialMenuView = RadialMenuView(shortcutManager: shortcutManager)
+            .environmentObject(sharedAppData)
+
+        // Now create the NSHostingView with the radialMenuView
+        let contentView = NSHostingView(rootView: radialMenuView)
+        windowController = WindowController(contentView: contentView, shortcutManager: shortcutManager, settings: settings, appData: sharedAppData)
     }
 }

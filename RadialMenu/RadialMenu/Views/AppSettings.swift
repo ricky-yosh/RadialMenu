@@ -8,13 +8,35 @@
 import SwiftUI
 
 // MARK: Preliminary information setup
-var appPaths: [String?] = [nil, nil, nil, nil, nil, nil, nil, nil]
+class AppData: ObservableObject {
+    @Published var appPaths: [URL?] {
+        didSet {
+            saveToUserDefaults()
+        }
+    }
+    
+    init() {
+        self.appPaths = [nil, nil, nil, nil, nil, nil, nil, nil]
+        loadFromUserDefaults()
+    }
+    
+    private func saveToUserDefaults() {
+        let pathsAsString = appPaths.map { $0?.absoluteString ?? "" }
+        UserDefaults.standard.set(pathsAsString, forKey: "appPaths")
+    }
+    
+    private func loadFromUserDefaults() {
+        if let pathsAsString = UserDefaults.standard.array(forKey: "appPaths") as? [String] {
+            self.appPaths = pathsAsString.map { URL(string: $0) }
+        }
+    }
+}
 
-func fetchAppIcons(appPaths: [String?]) -> [NSImage] {
+func fetchAppIcons(appPaths: [URL?]) -> [NSImage] {
     let workspace = NSWorkspace.shared
     return appPaths.map { path -> NSImage in
         if let path = path {
-            return workspace.icon(forFile: path)  // This always returns NSImage, not NSImage?
+            return workspace.icon(forFile: path.path())  // This always returns NSImage, not NSImage?
         } else {
             // Use the SF Symbol "plus" as a default icon for nil paths
             return NSImage(systemSymbolName: "plus", accessibilityDescription: nil) ?? NSImage()
@@ -22,27 +44,51 @@ func fetchAppIcons(appPaths: [String?]) -> [NSImage] {
     }
 }
 
-let appPathIcons = fetchAppIcons(appPaths: appPaths)
-
 class AppSettings: ObservableObject {
-    @Published var isShortcutEnabled: Bool = false
+    @Published var isShortcutEnabled: Bool = true
 }
 
 // MARK: - Settings Window View
 struct SettingsView: View {
+    private enum Tabs: Hashable {
+        case general
+    }
+    
     var body: some View {
-        Text("Settings Window!")
-            .frame(width: 300, height: 200)
+        TabView {
+            GeneralSettingsView()
+                .tabItem {
+                    Label("General", systemImage: "gear")
+                }
+                .tag(Tabs.general)
+        }
+        .padding(20)
+        .frame(width: 350, height: 400)
+        .background(VisualEffectView().ignoresSafeArea())
     }
 }
 
-func openSettingsWindow() {
-    let newWindow = NSWindow(
-        contentRect: NSRect(x: 20, y: 20, width: 300, height: 200),
-        styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
-        backing: .buffered, defer: false)
-    newWindow.center()
-    newWindow.setFrameAutosaveName("New Window")
-    newWindow.contentView = NSHostingView(rootView: SettingsView())
-    newWindow.makeKeyAndOrderFront(nil)
+struct GeneralSettingsView: View {
+
+    var body: some View {
+        VStack {
+            FileDialogPickerView(index: 0)
+        }
+    }
+}
+
+// blur effect
+struct VisualEffectView: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSVisualEffectView {
+        let effectView = NSVisualEffectView()
+        effectView.state = .active
+        return effectView
+    }
+
+    func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
+    }
+}
+
+#Preview {
+    SettingsView()
 }

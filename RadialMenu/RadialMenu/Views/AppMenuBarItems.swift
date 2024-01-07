@@ -10,7 +10,6 @@ import SwiftUI
 struct AppMenuBarItems: View
 {
     @ObservedObject var settings: AppSettings
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View
     {
@@ -20,8 +19,9 @@ struct AppMenuBarItems: View
         
         Divider()
         
-        Button("Settings...") {
-            openWindow(id: "setting-window")
+        SettingsLink
+        {
+            Text("Settings")
         }
         .keyboardShortcut(",", modifiers: .command)
         

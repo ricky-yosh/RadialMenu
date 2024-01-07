@@ -21,7 +21,5 @@ struct AppIcon: View {
                     .resizable()
             }
         }
-        .padding(30.0)
-        .frame(width: 90, height: 90) // Adjust size as needed
     }
 }
