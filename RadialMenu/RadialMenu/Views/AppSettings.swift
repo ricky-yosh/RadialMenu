@@ -63,16 +63,57 @@ struct SettingsView: View {
                 .tag(Tabs.general)
         }
         .padding(20)
-        .frame(width: 350, height: 400)
+        .frame(width: 550, height: 400)
         .background(VisualEffectView().ignoresSafeArea())
     }
 }
 
 struct GeneralSettingsView: View {
-
+    @EnvironmentObject var appData: AppData
+    
+    let sectionHeight = 60.0
+    let sectionWidth = 150.0
     var body: some View {
         VStack {
-            FileDialogPickerView(index: 0)
+            HStack {
+                FileDialogPickerView(index: 5)
+                    .frame(width: sectionWidth, height: sectionHeight)
+                    .padding()
+                FileDialogPickerView(index: 6)
+                    .frame(width: sectionWidth, height: sectionHeight)
+                    .padding()
+                FileDialogPickerView(index: 7)
+                    .frame(width: sectionWidth, height: sectionHeight)
+                    .padding()
+            }
+            HStack {
+                FileDialogPickerView(index: 4)
+                    .frame(width: sectionWidth, height: sectionHeight)
+                    .padding()
+                Button("clear all")
+                {
+                    appData.appPaths = [nil, nil, nil, nil, nil, nil, nil, nil]
+                }
+                .background(Color.red)
+                .clipShape(.rect(cornerRadius: 2.0))
+                .frame(width: sectionWidth, height: sectionHeight)
+                .padding()
+                FileDialogPickerView(index: 0)
+                    .frame(width: sectionWidth, height: sectionHeight)
+                    .padding()
+            }
+            
+            HStack {
+                FileDialogPickerView(index: 3)
+                    .frame(width: sectionWidth, height: sectionHeight)
+                    .padding()
+                FileDialogPickerView(index: 2)
+                    .frame(width: sectionWidth, height: sectionHeight)
+                    .padding()
+                FileDialogPickerView(index: 1)
+                    .frame(width: sectionWidth, height: sectionHeight)
+                    .padding()
+            }
         }
     }
 }
@@ -91,4 +132,5 @@ struct VisualEffectView: NSViewRepresentable {
 
 #Preview {
     SettingsView()
+        .environmentObject(sharedAppData)
 }

@@ -16,22 +16,23 @@ struct FileDialogPickerView: View {
 
     var body: some View {
         VStack {
-            Button("Open Folder or .app") {
+            Button("Select File Path: \(index + 1)") {
                 self.selectedFile = showOpenFileDialog()
                 appData.appPaths[index] = selectedFile
             }
-            .padding()
             .buttonStyle(.bordered)
             if let selectedFile = selectedFile {
                 let appPath = [selectedFile]
                 let appIcon = fetchAppIcons(appPaths: appPath)[0]
                 AppIcon(icon: appIcon, fallbackSystemImageName: "plus")
+                    .frame(width: 60, height: 60)
             }
             else
             {
                 let appPath = [appData.appPaths[index]]
                 let appIcon = fetchAppIcons(appPaths: appPath)[0]
                 AppIcon(icon: appIcon, fallbackSystemImageName: "plus")
+                    .frame(width: 60, height: 60)
             }
         }
     }
@@ -58,4 +59,5 @@ struct FileDialogPickerView: View {
 
 #Preview {
     FileDialogPickerView(index: 1)
+        .environmentObject(sharedAppData)
 }
