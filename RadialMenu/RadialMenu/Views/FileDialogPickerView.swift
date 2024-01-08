@@ -13,6 +13,7 @@ struct FileDialogPickerView: View {
 
     @State private var selectedFile: URL?
     @EnvironmentObject var appData: AppData
+    @State private var appPath: URL?
 
     var body: some View {
         VStack {
@@ -21,19 +22,17 @@ struct FileDialogPickerView: View {
                 appData.appPaths[index] = selectedFile
             }
             .buttonStyle(.bordered)
-            if let selectedFile = selectedFile {
-                let appPath = [selectedFile]
-                let appIcon = fetchAppIcons(appPaths: appPath)[0]
-                AppIcon(icon: appIcon, fallbackSystemImageName: "plus")
-                    .frame(width: 60, height: 60)
-            }
-            else
-            {
-                let appPath = [appData.appPaths[index]]
-                let appIcon = fetchAppIcons(appPaths: appPath)[0]
-                AppIcon(icon: appIcon, fallbackSystemImageName: "plus")
-                    .frame(width: 60, height: 60)
-            }
+            
+            let appIcon = fetchAppIcons(appPaths: [appPath])[0]
+            AppIcon(icon: appIcon, fallbackSystemImageName: "plus")
+                .frame(width: 60, height: 60)
+            Text(appPath?.absoluteString ?? "nil")
+        }
+        .onChange(of: selectedFile) {_, newPath in
+            appPath = newPath
+        }
+        .onChange(of: appData.appPaths[index]) {_,  newPath in
+            appPath = newPath
         }
     }
 
