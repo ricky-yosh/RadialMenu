@@ -24,6 +24,10 @@ struct RadialMenuApp: App {
             SettingsView()
                 .environmentObject(sharedAppData)  // Provide to keep track of app shortcuts
         }
+        Window("About", id: "about-view") {
+            AboutView()
+        }
+        .windowResizability(.contentSize)
     }
     
     init()

@@ -10,6 +10,7 @@ import SwiftUI
 struct AppMenuBarItems: View
 {
     @ObservedObject var settings: AppSettings
+    @Environment(\.openWindow) var openWindow
 
     var body: some View
     {
@@ -25,11 +26,17 @@ struct AppMenuBarItems: View
         }
         .keyboardShortcut(",", modifiers: .command)
         
+        
         Button("Quit")
         {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")
+        
+        Button("About")
+        {
+            openWindow(id: "about-view")
+        }
     }
 }
 
@@ -38,5 +45,6 @@ struct AppMenuBarItems_Previews: PreviewProvider {
         let settings = AppSettings()
         // Initialize SettingsView with the settings instance
         AppMenuBarItems(settings: settings)
+            .frame(width: 100.0, height: 100.0)
     }
 }
