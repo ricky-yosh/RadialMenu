@@ -15,6 +15,11 @@ class ShortcutManager: ObservableObject
     init(appData: AppData)
     {
         self.appData = appData
+        hoverStatesToNil()
+    }
+    
+    func hoverStatesToNil()
+    {
         let count = self.appData.appPaths.count
         for index in 0..<count
         {

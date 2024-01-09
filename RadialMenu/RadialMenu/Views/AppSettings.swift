@@ -32,14 +32,14 @@ class AppData: ObservableObject {
     }
 }
 
-func fetchAppIcons(appPaths: [URL?]) -> [NSImage] {
+func fetchAppIcons(appPaths: [URL?]) -> [NSImage?] {
     let workspace = NSWorkspace.shared
     return appPaths.map { path -> NSImage in
         if let path = path {
             return workspace.icon(forFile: path.path())  // This always returns NSImage, not NSImage?
         } else {
             // Use the SF Symbol "plus" as a default icon for nil paths
-            return NSImage(systemSymbolName: "plus", accessibilityDescription: nil) ?? NSImage()
+            return NSImage(systemSymbolName: "plus", accessibilityDescription: "plus image") ?? NSImage()
         }
     }
 }
@@ -94,8 +94,8 @@ struct GeneralSettingsView: View {
                 {
                     appData.appPaths = [nil, nil, nil, nil, nil, nil, nil, nil]
                 }
-                .background(Color.red)
-                .clipShape(.rect(cornerRadius: 2.0))
+                .background(Color.red) // Background color of the button
+                .cornerRadius(4) // Rounded corners
                 .frame(width: sectionWidth, height: sectionHeight)
                 .padding()
                 FileDialogPickerView(index: 0)

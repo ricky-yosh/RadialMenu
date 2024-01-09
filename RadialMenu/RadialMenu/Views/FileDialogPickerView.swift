@@ -24,9 +24,9 @@ struct FileDialogPickerView: View {
             .buttonStyle(.bordered)
             
             let appIcon = fetchAppIcons(appPaths: [appPath])[0]
-            AppIcon(icon: appIcon, fallbackSystemImageName: "plus")
+            AppIcon(icon: appIcon)
                 .frame(width: 60, height: 60)
-            Text(appPath?.absoluteString ?? "nil")
+                .help("\(appPath?.absoluteString ?? "nil")")
         }
         .onChange(of: selectedFile) {_, newPath in
             appPath = newPath

@@ -40,7 +40,7 @@ class WindowController: NSWindowController
         super.init(window: window)
 
         // Ignores mouse clicks and such
-        window.ignoresMouseEvents = true
+        window.ignoresMouseEvents = true // needed so menu does not stay present after releasing shorcut
         
         setupEventMonitor()
     }

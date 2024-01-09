@@ -9,17 +9,18 @@ import SwiftUI
 
 struct AppIcon: View {
     var icon: NSImage?
-    var fallbackSystemImageName: String
 
     var body: some View {
-        Group {
-            if let icon = icon {
-                Image(nsImage: icon)
-                    .resizable()
-            } else {
-                Image(systemName: fallbackSystemImageName)
-                    .resizable()
-            }
+        if self.icon?.accessibilityDescription == "plus image"
+        {
+            Image(nsImage: icon!)
+                .resizable()
+        }
+        else
+        {
+            Image(nsImage: icon!)
+                .resizable()
+                .padding(8.0) // make image icon smaller
         }
     }
 }
