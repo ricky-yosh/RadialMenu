@@ -9,6 +9,8 @@ import SwiftUI
 
 struct RadialMenuView: View {
     @State private var selectedWeapon: String?
+    @State private var isMenuOpen: Bool = false // State to control the animation
+
     let hitArea: CGFloat = 135 // Width of the hit area
     let circleRadius: CGFloat = 150 // Length of the hit area
     let radialMenuSections: Int = 8
@@ -33,7 +35,7 @@ struct RadialMenuView: View {
                     // Weapon Icon
                     let appIcon = fetchAppIcons(appPaths: appData.appPaths)[index]
                     AppIcon(icon: appIcon, fallbackSystemImageName: "plus")
-                        .padding(appData.appPaths[index] != nil ? 5 : 30) // adjust based on 
+                        .padding(appData.appPaths[index] != nil ? 5 : 30) // adjust based on icon size
                         .frame(width: 90, height: 90) // Adjust size as needed
                         .onHover { isHovering in
                             for item in 0..<appData.appPaths.count
@@ -50,12 +52,22 @@ struct RadialMenuView: View {
                         }
                         .offset(x: self.calculateXOffset(index: index, radius: 0.9), // Offset for icon
                                 y: self.calculateYOffset(index: index, radius: 0.9))
+                    // Apply the offset and animate
                 }
-                .offset(x: self.calculateXOffset(index: index, radius: 50 + circleRadius / 2), // Change circle radius
-                        y: self.calculateYOffset(index: index, radius: 50 + circleRadius / 2)) // Change circle radius
+                .offset(x: isMenuOpen ? calculateXOffset(index: index, radius: 50 + circleRadius / 2) : 0,
+                        y: isMenuOpen ? calculateYOffset(index: index, radius: 50 + circleRadius / 2) : 0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.1), value: isMenuOpen)
             }
+            
         }
         .frame(width: 500, height: 500)
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                withAnimation {
+                    isMenuOpen = true // Trigger the animation when the view appears
+                }
+            }
+        }
     }
     
     private func calculateXOffset(index: Int, radius: CGFloat) -> CGFloat
@@ -71,8 +83,13 @@ struct RadialMenuView: View {
     }
 }
 
-//#Preview
-//{
-//    RadialMenuView()
-//        .frame(width: 420, height: 420)
-//}
+struct RadialMenuView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create a mock AppData and ShortcutManager for the preview
+        let appData = AppData()
+        let shortcutManager = ShortcutManager(appData: appData) // Assuming ShortcutManager takes AppData
+
+        RadialMenuView(shortcutManager: shortcutManager)
+            .environmentObject(appData) // Provide the AppData as an EnvironmentObject
+    }
+}

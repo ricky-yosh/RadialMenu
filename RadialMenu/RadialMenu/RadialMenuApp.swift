@@ -31,8 +31,8 @@ struct RadialMenuApp: App {
         self.shortcutManager = ShortcutManager(appData: sharedAppData) // Use the shared instance
 
         // Create the SwiftUI view with the environment object
-        let shortcutManager = ShortcutManager(appData: sharedAppData)
-        let radialMenuView = RadialMenuView(shortcutManager: shortcutManager)
+//        let shortcutManager = ShortcutManager(appData: sharedAppData)
+        let radialMenuView = RadialMenuView(shortcutManager: self.shortcutManager)
             .environmentObject(sharedAppData)
 
         // Now create the NSHostingView with the radialMenuView

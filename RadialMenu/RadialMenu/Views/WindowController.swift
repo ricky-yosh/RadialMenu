@@ -55,8 +55,8 @@ class WindowController: NSWindowController
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.flagsChanged]) { [weak self] event in
             if event.modifierFlags.contains([.option, .command]) && self!.settings.isShortcutEnabled // shortcut detection
             {
+                self?.showWindow()
                 self?.moveWindowToCursor()
-                self?.window?.orderFrontRegardless()
             }
             else
             {
@@ -78,6 +78,16 @@ class WindowController: NSWindowController
                 self?.window?.orderOut(nil)
             }
         }
+    }
+    
+    func showWindow() {
+        // Create a new instance of your RadialMenuView
+        let radialMenuView = RadialMenuView(shortcutManager: shortcutManager)
+            .environmentObject(appData)
+
+        // Update the window's contentView with the new RadialMenuView
+        window?.contentView = NSHostingView(rootView: radialMenuView)
+        window?.orderFrontRegardless()
     }
     
     // Helper: Opens Application
