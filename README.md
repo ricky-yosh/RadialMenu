@@ -2,12 +2,17 @@
 
 A customizable radial (pie-style) menu designed to help macOS users quickly switch between applications using an intuitive and visually appealing interface.
 
+
+https://github.com/user-attachments/assets/8e780401-7822-4630-850a-d79105e8778b
+
 ---
 
 ## 🧭 Overview
 
 **RadialMenu** enhances macOS navigation by providing a fast, gesture-friendly way to launch or switch between apps. Inspired by radial menus found in games and creative software, this tool aims to boost productivity while offering a clean, minimal UI.
 
+#### Shortcut Keys:
+Hold down: (**Option ⌥** + **Command ⌘**) to open up the menu
 ---
 
 ## ✨ Features
