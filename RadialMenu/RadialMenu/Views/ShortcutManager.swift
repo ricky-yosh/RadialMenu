@@ -10,18 +10,16 @@ import SwiftUI
 class ShortcutManager: ObservableObject
 {
     @Published var hoverStates: [Int: Bool] = [:]
-    var appData: AppData
+    private let slotCount = RunningAppsProvider.slotCount
 
-    init(appData: AppData)
+    init()
     {
-        self.appData = appData
         hoverStatesToNil()
     }
     
     func hoverStatesToNil()
     {
-        let count = self.appData.appPaths.count
-        for index in 0..<count
+        for index in 0..<slotCount
         {
             hoverStates[index] = false
         }

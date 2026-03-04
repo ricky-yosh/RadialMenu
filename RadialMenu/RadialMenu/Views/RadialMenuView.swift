@@ -8,121 +8,170 @@
 import SwiftUI
 
 struct RadialMenuView: View {
-    @State private var selectedWeapon: String?
-    @State private var isMenuOpen: Bool = false // State to control the animation
-    @State private var cancelIsHovered: Bool
+    @ObservedObject var wheelProvider: FixedWheelProvider
+    @ObservedObject var uiState: WheelUIState
 
-    let hitArea: CGFloat = 135 // Width of the hit area
-    let circleRadius: CGFloat = 150 // Length of the hit area
-    let radialMenuSections: Int = 8
-    
-    @EnvironmentObject var appData: AppData
-    @ObservedObject var shortcutManager: ShortcutManager
+    private let primaryOffset: CGFloat = 130
 
-    init(shortcutManager: ShortcutManager) {
-        self.shortcutManager = shortcutManager
-        self.cancelIsHovered = false
-    }
-    
     var body: some View {
-                
         ZStack {
-            ForEach(0..<appData.appPaths.count, id: \.self) { index in
-                Group {
-                    Circle()
-                        .fill(shortcutManager.hoverStates[index, default: false] ? Color.blue : Color(red: 0.8, green: 0.8, blue: 0.8))
-                        .shadow(color: .black, radius: 10, x: 1, y: 1) // Adding black shadow
-                        .scaleEffect(shortcutManager.hoverStates[index, default: false] ? 1.05 : 1.0) // Enlarge when hovering
-                        .animation(.easeInOut(duration: 0.03), value: shortcutManager.hoverStates[index, default: false])
-                        .frame(width: hitArea/1.5)
-                        .rotationEffect(Angle(degrees: Double(index) * (360 / Double(appData.appPaths.count)) + 90))
-                    
-                    // Weapon Icon
-                    let appIcon = fetchAppIcons(appPaths: appData.appPaths)[index]
-                    AppIcon(icon: appIcon)
-                        .foregroundColor(.white) // Set the image color to black
-                        .padding(appData.appPaths[index] != nil ? 5 : 30) // adjust based on icon size
-                        .scaleEffect(shortcutManager.hoverStates[index, default: false] ? 1.05 : 1.0) // Enlarge when hovering
-                        .animation(.easeInOut(duration: 0.03), value: shortcutManager.hoverStates[index, default: false])
-                        .frame(width: 90, height: 90) // Adjust size as needed
-                        .onHover { isHovering in
-                            for item in 0..<appData.appPaths.count
-                            {
-                                if item == index
-                                {
-                                    shortcutManager.hoverStates[item] = true
-                                }
-                                else
-                                {
-                                    shortcutManager.hoverStates[item] = false
-                                }
+            Color.clear.ignoresSafeArea()
+
+            ZStack {
+                ForEach(PrimaryDirection.allCases, id: \.self) { direction in
+                    primaryNode(direction)
+                        .offset(primaryOffset(for: direction))
+                }
+
+                if case .submenu(let direction) = uiState.phase {
+                    submenuCards(for: direction)
+                }
+            }
+            .frame(width: 620, height: 620)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.clear)
+    }
+
+    private func primaryNode(_ direction: PrimaryDirection) -> some View {
+        let isSelected = uiState.highlightedPrimary == direction
+        return VStack(spacing: 6) {
+            Text(direction.title)
+                .font(.headline)
+            Text(direction.keyHint)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(width: 112, height: 112)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(isSelected ? Color.blue.opacity(0.82) : Color.white.opacity(0.15))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isSelected ? Color.white : Color.white.opacity(0.2), lineWidth: isSelected ? 2 : 1)
+        )
+    }
+
+    @ViewBuilder
+    private func submenuCards(for direction: PrimaryDirection) -> some View {
+        let hints = submenuHintsForDirection(direction)
+
+        Group {
+            if isVerticalSubmenu(for: direction) {
+                VStack(spacing: 14) {
+                    submenuCard(direction: direction, slot: 0, keyHint: hints.0)
+                    submenuCard(direction: direction, slot: 1, keyHint: hints.1)
+                }
+            } else {
+                HStack(spacing: 14) {
+                    submenuCard(direction: direction, slot: 0, keyHint: hints.0)
+                    submenuCard(direction: direction, slot: 1, keyHint: hints.1)
+                }
+            }
+        }
+        .offset(submenuOffset(for: direction))
+    }
+
+    private func submenuCard(direction: PrimaryDirection, slot: Int, keyHint: String) -> some View {
+        let item = wheelProvider.item(for: direction, slot: slot)
+        let isHighlighted = uiState.highlightedSubmenuSlot == slot
+
+        return ZStack(alignment: .topLeading) {
+            if let image = item?.previewImage {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 228, height: 132)
+                    .clipped()
+            } else {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(item != nil ? Color.white.opacity(0.22) : Color.white.opacity(0.08))
+                    .overlay(alignment: .center) {
+                        if let icon = item?.icon {
+                            Image(nsImage: icon)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 44, height: 44)
+                        } else {
+                            VStack(spacing: 8) {
+                                Image(systemName: "plus.app")
+                                    .font(.system(size: 24, weight: .semibold))
+                                Text("Assign App")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                         }
-                        .offset(x: self.calculateXOffset(index: index, radius: 0.9), // Offset for icon
-                                y: self.calculateYOffset(index: index, radius: 0.9))
-                    // Apply the offset and animate
-                }
-                .offset(x: isMenuOpen ? calculateXOffset(index: index, radius: 50 + circleRadius / 2) : 0,
-                        y: isMenuOpen ? calculateYOffset(index: index, radius: 50 + circleRadius / 2) : 0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6, blendDuration: 0.1), value: isMenuOpen)
-            }
-            ZStack
-            {
-                Group
-                {
-                    Circle()
-                        .fill(self.cancelIsHovered ? Color(red: 1.0, green: 0.1, blue: 0.1) : Color(red: 1.0, green: 0.4, blue: 0.4))
-                        .shadow(color: .black, radius: 15, x: 0.1, y: 0.1) // Adding black shadow
-                        .frame(width: hitArea/1.75)
-                    Image(systemName: "plus")
-                        .resizable()
-                        .frame(width: hitArea/4, height: hitArea/4)
-                        .rotationEffect(.degrees(45))
-                }
-                .onHover { isHovering in
-                    if isHovering
-                    {
-                        self.cancelIsHovered = true
-                        shortcutManager.hoverStatesToNil()
                     }
-                    else
-                    {
-                        self.cancelIsHovered = false
-                    }
-                }
             }
-            
-        }
-        .frame(width: 500, height: 500)
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                withAnimation {
-                    isMenuOpen = true // Trigger the animation when the view appears
-                }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(slot == 0 ? "Main" : "Alt")
+                    .font(.caption2.bold())
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background((slot == 0 ? Color.blue : Color.orange).opacity(0.85), in: Capsule())
+
+                Text(item?.displayName ?? "Empty")
+                    .font(.subheadline.bold())
+                    .lineLimit(1)
+                Text(keyHint)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
+            .padding(8)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 9))
+            .padding(8)
         }
-    }
-    
-    private func calculateXOffset(index: Int, radius: CGFloat) -> CGFloat
-    {
-        let angle = Double(index) * (2 * .pi / Double(appData.appPaths.count))
-        return radius * cos(CGFloat(angle))
+        .frame(width: 228, height: 132)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isHighlighted ? Color.white : Color.white.opacity(0.35), lineWidth: isHighlighted ? 2 : 1)
+        )
+        .opacity(item == nil ? 0.88 : 1)
     }
 
-    private func calculateYOffset(index: Int, radius: CGFloat) -> CGFloat
-    {
-        let angle = Double(index) * (2 * .pi / Double(appData.appPaths.count))
-        return radius * sin(CGFloat(angle))
+    private func primaryOffset(for direction: PrimaryDirection) -> CGSize {
+        switch direction {
+        case .top: return CGSize(width: 0, height: -primaryOffset)
+        case .right: return CGSize(width: primaryOffset, height: 0)
+        case .bottom: return CGSize(width: 0, height: primaryOffset)
+        case .left: return CGSize(width: -primaryOffset, height: 0)
+        }
+    }
+
+    private func submenuOffset(for direction: PrimaryDirection) -> CGSize {
+        switch direction {
+        case .top: return CGSize(width: 0, height: -230)
+        case .right: return CGSize(width: 230, height: 0)
+        case .bottom: return CGSize(width: 0, height: 230)
+        case .left: return CGSize(width: -230, height: 0)
+        }
+    }
+
+    private func isVerticalSubmenu(for direction: PrimaryDirection) -> Bool {
+        direction == .left || direction == .right
+    }
+
+    private func submenuHintsForDirection(_ direction: PrimaryDirection) -> (String, String) {
+        switch direction {
+        case .left, .right:
+            return ("W / ↑", "S / ↓")
+        case .top, .bottom:
+            return ("A / ←", "D / →")
+        }
     }
 }
 
 struct RadialMenuView_Previews: PreviewProvider {
     static var previews: some View {
-        // Create a mock AppData and ShortcutManager for the preview
         let appData = AppData()
-        let shortcutManager = ShortcutManager(appData: appData) // Assuming ShortcutManager takes AppData
-
-        RadialMenuView(shortcutManager: shortcutManager)
-            .environmentObject(appData) // Provide the AppData as an EnvironmentObject
+        let provider = FixedWheelProvider(appData: appData, settings: AppSettings())
+        let uiState = WheelUIState()
+        uiState.isVisible = true
+        uiState.phase = .submenu(.right)
+        uiState.highlightedPrimary = .right
+        return RadialMenuView(wheelProvider: provider, uiState: uiState)
     }
 }

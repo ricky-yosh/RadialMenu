@@ -12,7 +12,8 @@ let sharedAppData = AppData()
 @main
 struct RadialMenuApp: App {
     var windowController: WindowController?
-    var shortcutManager: ShortcutManager
+    var wheelProvider: FixedWheelProvider
+    var wheelUIState: WheelUIState
     var settings = AppSettings()
 
     var body: some Scene {
@@ -21,7 +22,7 @@ struct RadialMenuApp: App {
                 .environmentObject(sharedAppData)  // Provide to keep track of app shortcuts
         }
         Settings {
-            SettingsView()
+            SettingsView(settings: settings)
                 .environmentObject(sharedAppData)  // Provide to keep track of app shortcuts
         }
         Window("About", id: "about-view") {
@@ -32,15 +33,14 @@ struct RadialMenuApp: App {
     
     init()
     {
-        self.shortcutManager = ShortcutManager(appData: sharedAppData) // Use the shared instance
+        self.wheelProvider = FixedWheelProvider(appData: sharedAppData, settings: settings)
+        self.wheelUIState = WheelUIState()
 
         // Create the SwiftUI view with the environment object
-//        let shortcutManager = ShortcutManager(appData: sharedAppData)
-        let radialMenuView = RadialMenuView(shortcutManager: self.shortcutManager)
-            .environmentObject(sharedAppData)
+        let radialMenuView = RadialMenuView(wheelProvider: wheelProvider, uiState: wheelUIState)
 
         // Now create the NSHostingView with the radialMenuView
         let contentView = NSHostingView(rootView: radialMenuView)
-        windowController = WindowController(contentView: contentView, shortcutManager: shortcutManager, settings: settings, appData: sharedAppData)
+        windowController = WindowController(contentView: contentView, settings: settings, wheelProvider: wheelProvider, uiState: wheelUIState)
     }
 }

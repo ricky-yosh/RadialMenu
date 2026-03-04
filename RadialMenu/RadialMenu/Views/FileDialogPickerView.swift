@@ -10,23 +10,33 @@ import UniformTypeIdentifiers
 
 struct FileDialogPickerView: View {
     let index: Int
+    var label: String = ""
 
     @State private var selectedFile: URL?
     @EnvironmentObject var appData: AppData
     @State private var appPath: URL?
 
     var body: some View {
-        VStack {
-            Button("Select File Path: \(index + 1)") {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label.isEmpty ? "Slot \(index + 1)" : label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Button(appPath == nil ? "Select App" : "Change App") {
                 self.selectedFile = showOpenFileDialog()
                 appData.appPaths[index] = selectedFile
             }
             .buttonStyle(.bordered)
             
             let appIcon = fetchAppIcons(appPaths: [appPath])[0]
-            AppIcon(icon: appIcon)
-                .frame(width: 60, height: 60)
-                .help("\(appPath?.absoluteString ?? "nil")")
+            HStack(spacing: 10) {
+                AppIcon(icon: appIcon)
+                    .frame(width: 38, height: 38)
+                Text(appDisplayName(from: appPath))
+                    .font(.caption)
+                    .lineLimit(2)
+            }
+            .help("\(appPath?.absoluteString ?? "nil")")
         }
         .onChange(of: selectedFile) {_, newPath in
             appPath = newPath
@@ -39,11 +49,13 @@ struct FileDialogPickerView: View {
     private func showOpenFileDialog() -> URL? {
         let dialog = NSOpenPanel()
 
-        dialog.title = "Choose a folder or file"
+        dialog.title = "Choose an application"
         dialog.showsResizeIndicator = true
         dialog.showsHiddenFiles = false
         dialog.allowsMultipleSelection = false
-        dialog.canChooseDirectories = true  // Allow folder selection
+        dialog.canChooseDirectories = false
+        dialog.canChooseFiles = true
+        dialog.allowedContentTypes = [.application]
         dialog.canCreateDirectories = false
 
         if dialog.runModal() == .OK {
@@ -52,6 +64,17 @@ struct FileDialogPickerView: View {
             // User clicked on "Cancel"
             return nil
         }
+    }
+
+    private func appDisplayName(from url: URL?) -> String {
+        guard let url else {
+            return "Not set"
+        }
+
+        let bundle = Bundle(url: url)
+        return (bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
+            ?? (bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String)
+            ?? url.deletingPathExtension().lastPathComponent
     }
 }
 
