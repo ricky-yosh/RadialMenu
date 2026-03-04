@@ -19,7 +19,7 @@ struct AboutView: View {
                 .font(.largeTitle)
             Text("Version 1.0.0")
                 .foregroundColor(.gray)
-            Text("© 2024 Richard Yoshioka")
+            Text("© 2026 Richard Yoshioka")
                 .foregroundColor(.gray)
             Button(action: openGithubLink) {
                 Text("Link to my GitHub ")

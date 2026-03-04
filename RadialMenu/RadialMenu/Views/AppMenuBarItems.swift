@@ -20,8 +20,7 @@ struct AppMenuBarItems: View
         
         Divider()
         
-        SettingsLink
-        {
+        SettingsLink {
             Text("Settings")
         }
         .keyboardShortcut(",", modifiers: .command)
@@ -40,11 +39,9 @@ struct AppMenuBarItems: View
     }
 }
 
-struct AppMenuBarItems_Previews: PreviewProvider {
-    static var previews: some View {
-        let settings = AppSettings()
-        // Initialize SettingsView with the settings instance
-        AppMenuBarItems(settings: settings)
-            .frame(width: 100.0, height: 100.0)
-    }
+#Preview {
+    let settings = AppSettings()
+    // Initialize SettingsView with the settings instance
+    AppMenuBarItems(settings: settings)
+        .frame(width: 100.0, height: 100.0)
 }
