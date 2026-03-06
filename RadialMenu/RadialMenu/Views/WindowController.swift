@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Carbon.HIToolbox
-import UniformTypeIdentifiers
+import QuartzCore
 
 class WindowController: NSWindowController {
     var settings = AppSettings()
@@ -16,14 +16,29 @@ class WindowController: NSWindowController {
 
     private var localKeyDownMonitor: Any?
     private var localKeyUpMonitor: Any?
+    private var lifecycleObservers: [NSObjectProtocol] = []
     private var hotKeyRefs: [EventHotKeyRef] = []
     private var hotKeyHandlerRef: EventHandlerRef?
     private(set) var activeHotKeyLabel: String = "Option + Space"
 
     private let submenuHoldThreshold: TimeInterval = 0.25
+    private let selectionLingerDuration: TimeInterval = 0.15
+    private let selectionFadeDuration: TimeInterval = 0.22
+    private let selectionFlickerStepDuration: TimeInterval = 0.08
+    private let selectionFlickerStepCount = 4
     private var holdTransitionWorkItem: DispatchWorkItem?
+    private var selectionWorkItems: [DispatchWorkItem] = []
     private var pendingPrimaryDirection: PrimaryDirection?
     private var pendingPrimaryKeyCode: UInt16?
+    private var pendingActivationDirection: PrimaryDirection?
+    private var pendingActivationSlot: Int?
+    private var isAssignmentInProgress = false
+    private var shouldAnimateWheel: Bool {
+        settings.forceWheelAnimations || !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+    }
+    private var selectionFeedbackDuration: TimeInterval {
+        selectionLingerDuration + (selectionFlickerStepDuration * Double(selectionFlickerStepCount))
+    }
 
     override func windowDidLoad() {
         super.windowDidLoad()
@@ -51,6 +66,7 @@ class WindowController: NSWindowController {
 
         super.init(window: window)
         registerGlobalToggleHotKey()
+        registerLifecycleObservers()
     }
 
     required init?(coder: NSCoder) {
@@ -59,10 +75,80 @@ class WindowController: NSWindowController {
 
     deinit {
         stopLocalKeyMonitor()
+        for observer in lifecycleObservers {
+            NotificationCenter.default.removeObserver(observer)
+            NSWorkspace.shared.notificationCenter.removeObserver(observer)
+        }
+        lifecycleObservers.removeAll()
         for hotKeyRef in hotKeyRefs {
             UnregisterEventHotKey(hotKeyRef)
         }
         hotKeyRefs.removeAll()
+    }
+
+    private func registerLifecycleObservers() {
+        let appDeactivateObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.closeMenuIfVisible()
+        }
+        lifecycleObservers.append(appDeactivateObserver)
+
+        let frontmostAppObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            self?.closeMenuIfFrontmostAppChanged(note)
+        }
+        lifecycleObservers.append(frontmostAppObserver)
+
+        let spaceChangeObserver = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.closeMenuIfVisible()
+        }
+        lifecycleObservers.append(spaceChangeObserver)
+
+        if let window {
+            let windowResignKeyObserver = NotificationCenter.default.addObserver(
+                forName: NSWindow.didResignKeyNotification,
+                object: window,
+                queue: .main
+            ) { [weak self] _ in
+                self?.closeMenuIfVisible()
+            }
+            lifecycleObservers.append(windowResignKeyObserver)
+        }
+    }
+
+    private func closeMenuIfVisible() {
+        guard uiState.isVisible else {
+            return
+        }
+        closeMenu()
+    }
+
+    private func closeMenuIfFrontmostAppChanged(_ notification: Notification) {
+        guard uiState.isVisible else {
+            return
+        }
+
+        guard
+            let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+            let activatedBundleID = app.bundleIdentifier
+        else {
+            return
+        }
+
+        let ownBundleID = Bundle.main.bundleIdentifier
+        if activatedBundleID != ownBundleID {
+            closeMenu()
+        }
     }
 
     private func registerGlobalToggleHotKey() {
@@ -153,8 +239,22 @@ class WindowController: NSWindowController {
             return event
         }
 
+        if uiState.animationPhase == .selecting || uiState.animationPhase == .closing {
+            return nil
+        }
+
         if event.keyCode == 53 { // Escape
+            if case .assignment(let direction, let slot) = uiState.displayPhase {
+                return handleAssignmentKeyDown(event, direction: direction, slot: slot)
+            }
             closeMenu()
+            return nil
+        }
+
+        if event.isARepeat {
+            if case .assignment(let direction, let slot) = uiState.displayPhase {
+                return handleAssignmentKeyDown(event, direction: direction, slot: slot)
+            }
             return nil
         }
 
@@ -164,15 +264,13 @@ class WindowController: NSWindowController {
             return nil
         }
 
-        if event.isARepeat {
-            return nil
-        }
-
-        switch uiState.phase {
+        switch uiState.displayPhase {
         case .root:
             return handleRootKeyDown(event)
         case .submenu(let direction):
             return handleSubmenuKeyDown(event, direction: direction)
+        case .assignment(let direction, let slot):
+            return handleAssignmentKeyDown(event, direction: direction, slot: slot)
         }
     }
 
@@ -181,7 +279,7 @@ class WindowController: NSWindowController {
             return event
         }
 
-        guard case .root = uiState.phase else {
+        guard case .root = uiState.displayPhase else {
             return nil
         }
 
@@ -193,8 +291,13 @@ class WindowController: NSWindowController {
 
         cancelPendingPrimary()
         uiState.highlightedPrimary = direction
-        wheelProvider.activate(direction: direction, slot: 0)
-        closeMenu()
+        let selectedMainSlot = wheelProvider.mainSlot(for: direction)
+        if wheelProvider.item(for: direction, slot: selectedMainSlot) == nil {
+            startSubmenuEntryFeedback(direction: direction)
+            return nil
+        }
+
+        performStandardSelection(direction: direction, slot: selectedMainSlot)
         return nil
     }
 
@@ -213,7 +316,7 @@ class WindowController: NSWindowController {
 
     private func handleSubmenuKeyDown(_ event: NSEvent, direction: PrimaryDirection) -> NSEvent? {
         if isBackNavigationKey(for: direction, keyCode: event.keyCode) {
-            uiState.phase = .root
+            uiState.displayPhase = .root
             uiState.highlightedSubmenuSlot = nil
             uiState.highlightedPrimary = nil
             cancelPendingPrimary()
@@ -237,51 +340,17 @@ class WindowController: NSWindowController {
 
     private func activateOrAssignSlot(direction: PrimaryDirection, slot: Int) {
         if wheelProvider.item(for: direction, slot: slot) == nil {
-            guard let picked = pickApplicationURL() else {
-                return
-            }
-
-            wheelProvider.setPath(picked, for: direction, slot: slot)
-        }
-
-        wheelProvider.promoteToMainIfNeeded(direction: direction, slot: slot)
-        wheelProvider.refreshSnapshot()
-        wheelProvider.activate(direction: direction, slot: 0)
-        closeMenu()
-    }
-
-    private func reassignSlotWithoutActivation(direction: PrimaryDirection, slot: Int) {
-        guard let picked = pickApplicationURL() else {
+            performAssignmentFlow(direction: direction, slot: slot)
             return
         }
 
-        wheelProvider.setPath(picked, for: direction, slot: slot)
+        wheelProvider.setMainSlot(slot, for: direction)
         wheelProvider.refreshSnapshot()
-        uiState.phase = .submenu(direction)
-        uiState.highlightedPrimary = direction
-        uiState.highlightedSubmenuSlot = slot
+        performStandardSelection(direction: direction, slot: slot, submenuSlot: slot)
     }
 
-    private func pickApplicationURL() -> URL? {
-        stopLocalKeyMonitor()
-
-        let dialog = NSOpenPanel()
-        dialog.title = "Choose an application"
-        dialog.showsResizeIndicator = true
-        dialog.showsHiddenFiles = false
-        dialog.allowsMultipleSelection = false
-        dialog.canChooseDirectories = false
-        dialog.canChooseFiles = true
-        dialog.allowedContentTypes = [.application]
-        dialog.canCreateDirectories = false
-
-        let pickedURL = dialog.runModal() == .OK ? dialog.url : nil
-
-        if uiState.isVisible {
-            startLocalKeyMonitor()
-        }
-
-        return pickedURL
+    private func reassignSlotWithoutActivation(direction: PrimaryDirection, slot: Int) {
+        performAssignmentFlow(direction: direction, slot: slot)
     }
 
     private func scheduleSubmenuTransition(for direction: PrimaryDirection, keyCode: UInt16) {
@@ -295,18 +364,37 @@ class WindowController: NSWindowController {
             guard self.uiState.isVisible,
                   self.pendingPrimaryDirection == direction,
                   self.pendingPrimaryKeyCode == keyCode,
-                  self.uiState.phase == .root else {
+                  self.uiState.displayPhase == .root else {
                 return
             }
 
-            self.uiState.phase = .submenu(direction)
-            self.uiState.highlightedPrimary = direction
-            self.uiState.highlightedSubmenuSlot = nil
             self.cancelPendingPrimary()
+            self.startSubmenuEntryFeedback(direction: direction)
         }
 
         holdTransitionWorkItem = work
         DispatchQueue.main.asyncAfter(deadline: .now() + submenuHoldThreshold, execute: work)
+    }
+
+    private func startSubmenuEntryFeedback(direction: PrimaryDirection) {
+        let didStart = startSelectionSequence(
+            target: .primary(direction),
+            stopLocalMonitoring: false,
+            includesFadeOut: false
+        ) { [weak self] in
+            guard let self else {
+                return
+            }
+            self.uiState.displayPhase = .submenu(direction)
+            self.uiState.highlightedPrimary = direction
+            self.uiState.highlightedSubmenuSlot = nil
+        }
+
+        if !didStart {
+            uiState.displayPhase = .submenu(direction)
+            uiState.highlightedPrimary = direction
+            uiState.highlightedSubmenuSlot = nil
+        }
     }
 
     private func cancelPendingPrimary() {
@@ -327,33 +415,417 @@ class WindowController: NSWindowController {
         }
 
         wheelProvider.refreshSnapshot()
-        uiState.reset()
-        uiState.isVisible = true
+        uiState.resetForPresentation()
         fitWindowToActiveScreen()
-        showWindow()
+        showWindow(startLocalMonitoring: true)
     }
 
     private func closeMenu() {
         stopLocalKeyMonitor()
         cancelPendingPrimary()
+        cancelSelectionCloseSequence()
+        clearPendingActivation()
+        isAssignmentInProgress = false
         uiState.reset()
         uiState.isVisible = false
         window?.orderOut(nil)
     }
 
-    private func showWindow() {
-        let view = RadialMenuView(wheelProvider: wheelProvider, uiState: uiState)
+    private func showWindow(startLocalMonitoring: Bool) {
+        let view = RadialMenuView(wheelProvider: wheelProvider, uiState: uiState, settings: settings)
         window?.contentView = NSHostingView(rootView: view)
 
-        if #available(macOS 14.0, *) {
-            NSApplication.shared.activate()
-        } else {
-            NSApp.activate(ignoringOtherApps: true)
-        }
+        NSApplication.shared.activate()
 
         window?.orderFrontRegardless()
         window?.makeKey()
-        startLocalKeyMonitor()
+        if startLocalMonitoring {
+            startLocalKeyMonitor()
+        }
+
+        if !shouldAnimateWheel {
+            uiState.animationPhase = .idle
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                guard let self, self.uiState.isVisible, self.uiState.animationPhase == .opening else {
+                    return
+                }
+                self.uiState.animationPhase = .idle
+            }
+        }
+    }
+
+    private func performAssignmentFlow(direction: PrimaryDirection, slot: Int) {
+        guard !isAssignmentInProgress else {
+            return
+        }
+        isAssignmentInProgress = true
+
+        presentAssignmentPicker(direction: direction, slot: slot)
+        isAssignmentInProgress = false
+    }
+
+    private func presentAssignmentPicker(direction: PrimaryDirection, slot: Int) {
+        let candidates = wheelProvider.assignmentCandidates()
+        uiState.assignmentCandidates = candidates
+        uiState.assignmentQuery = ""
+        uiState.assignmentCursorIndex = 0
+        uiState.assignmentFilteredIndices = []
+
+        let currentPath = wheelProvider.path(for: direction, slot: slot)
+        if let currentPath,
+           let index = candidates.firstIndex(where: { $0.appURL.path == currentPath.path }) {
+            uiState.assignmentSelectedIndex = index
+        } else {
+            uiState.assignmentSelectedIndex = 0
+        }
+        refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+
+        clearPendingActivation()
+        uiState.displayPhase = .assignment(direction: direction, slot: slot)
+        uiState.highlightedPrimary = direction
+        uiState.highlightedSubmenuSlot = slot
+    }
+
+    private func cancelAssignmentMode(direction: PrimaryDirection) {
+        uiState.assignmentCandidates = []
+        uiState.assignmentSelectedIndex = 0
+        uiState.assignmentFilteredIndices = []
+        uiState.assignmentQuery = ""
+        uiState.assignmentCursorIndex = 0
+        uiState.displayPhase = .submenu(direction)
+        uiState.highlightedPrimary = direction
+        uiState.highlightedSubmenuSlot = nil
+    }
+
+    private func handleAssignmentKeyDown(_ event: NSEvent, direction: PrimaryDirection, slot: Int) -> NSEvent? {
+        if event.keyCode == 53 { // Escape
+            if uiState.assignmentQuery.isEmpty {
+                cancelAssignmentMode(direction: direction)
+            } else {
+                uiState.assignmentQuery = ""
+                uiState.assignmentCursorIndex = 0
+                refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+            }
+            return nil
+        }
+
+        if event.keyCode == 36 || event.keyCode == 76 { // Return, keypad Enter
+            assignSelectedCandidate(direction: direction, slot: slot)
+            return nil
+        }
+
+        if event.keyCode == 123 { // Left
+            moveAssignmentCursor(by: -1)
+            return nil
+        }
+
+        if event.keyCode == 124 { // Right
+            moveAssignmentCursor(by: 1)
+            return nil
+        }
+
+        if event.keyCode == 51 { // Delete (Backspace)
+            removeAssignmentCharacterBeforeCursor()
+            return nil
+        }
+
+        if event.keyCode == 117 { // Forward Delete
+            removeAssignmentCharacterAtCursor()
+            return nil
+        }
+
+        let delta = assignmentNavigationDelta(for: event.keyCode)
+        if delta != 0 {
+            moveAssignmentSelection(by: delta)
+            return nil
+        }
+
+        if let character = assignmentSearchCharacter(from: event) {
+            insertAssignmentCharacter(character)
+            return nil
+        }
+
+        return nil
+    }
+
+    private func assignmentNavigationDelta(for keyCode: UInt16) -> Int {
+        switch keyCode {
+        case 126: // Up
+            return -1
+        case 125: // Down
+            return 1
+        default:
+            return 0
+        }
+    }
+
+    private func assignmentSearchCharacter(from event: NSEvent) -> Character? {
+        if event.modifierFlags.contains(.command)
+            || event.modifierFlags.contains(.option)
+            || event.modifierFlags.contains(.control) {
+            return nil
+        }
+
+        guard let text = event.charactersIgnoringModifiers,
+              text.count == 1,
+              let char = text.first else {
+            return nil
+        }
+
+        if char.isNewline || char.isWhitespace {
+            return nil
+        }
+
+        if char.isASCII, let scalar = char.unicodeScalars.first, scalar.value < 32 {
+            return nil
+        }
+
+        return char
+    }
+
+    private func refreshAssignmentFilter(preferredSelectionIndex: Int?) {
+        clampAssignmentCursor()
+        let query = uiState.assignmentQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        let candidates = uiState.assignmentCandidates
+
+        if query.isEmpty {
+            uiState.assignmentFilteredIndices = Array(candidates.indices)
+        } else {
+            uiState.assignmentFilteredIndices = candidates.indices.filter {
+                candidates[$0].displayName.localizedCaseInsensitiveContains(query)
+            }
+        }
+
+        guard !uiState.assignmentFilteredIndices.isEmpty else {
+            uiState.assignmentSelectedIndex = 0
+            return
+        }
+
+        if let preferredSelectionIndex,
+           uiState.assignmentFilteredIndices.contains(preferredSelectionIndex) {
+            uiState.assignmentSelectedIndex = preferredSelectionIndex
+            return
+        }
+
+        if uiState.assignmentFilteredIndices.contains(uiState.assignmentSelectedIndex) {
+            return
+        }
+
+        uiState.assignmentSelectedIndex = uiState.assignmentFilteredIndices[0]
+    }
+
+    private func assignmentQueryCharacterCount() -> Int {
+        uiState.assignmentQuery.count
+    }
+
+    private func assignmentQueryIndex(at characterOffset: Int) -> String.Index {
+        let clampedOffset = max(0, min(characterOffset, assignmentQueryCharacterCount()))
+        return uiState.assignmentQuery.index(uiState.assignmentQuery.startIndex, offsetBy: clampedOffset)
+    }
+
+    private func clampAssignmentCursor() {
+        uiState.assignmentCursorIndex = max(0, min(uiState.assignmentCursorIndex, assignmentQueryCharacterCount()))
+    }
+
+    private func moveAssignmentCursor(by delta: Int) {
+        uiState.assignmentCursorIndex += delta
+        clampAssignmentCursor()
+    }
+
+    private func insertAssignmentCharacter(_ character: Character) {
+        clampAssignmentCursor()
+        let insertionIndex = assignmentQueryIndex(at: uiState.assignmentCursorIndex)
+        uiState.assignmentQuery.insert(character, at: insertionIndex)
+        uiState.assignmentCursorIndex += 1
+        refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+    }
+
+    private func removeAssignmentCharacterBeforeCursor() {
+        clampAssignmentCursor()
+        guard uiState.assignmentCursorIndex > 0 else {
+            return
+        }
+
+        let removalStart = assignmentQueryIndex(at: uiState.assignmentCursorIndex - 1)
+        let removalEnd = assignmentQueryIndex(at: uiState.assignmentCursorIndex)
+        uiState.assignmentQuery.removeSubrange(removalStart..<removalEnd)
+        uiState.assignmentCursorIndex -= 1
+        refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+    }
+
+    private func removeAssignmentCharacterAtCursor() {
+        clampAssignmentCursor()
+        guard uiState.assignmentCursorIndex < assignmentQueryCharacterCount() else {
+            return
+        }
+
+        let removalStart = assignmentQueryIndex(at: uiState.assignmentCursorIndex)
+        let removalEnd = assignmentQueryIndex(at: uiState.assignmentCursorIndex + 1)
+        uiState.assignmentQuery.removeSubrange(removalStart..<removalEnd)
+        refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+    }
+
+    private func moveAssignmentSelection(by delta: Int) {
+        let filteredIndices = uiState.assignmentFilteredIndices
+        guard !filteredIndices.isEmpty else {
+            return
+        }
+
+        let currentPosition = filteredIndices.firstIndex(of: uiState.assignmentSelectedIndex) ?? 0
+        let nextPosition = (currentPosition + delta + filteredIndices.count) % filteredIndices.count
+        uiState.assignmentSelectedIndex = filteredIndices[nextPosition]
+    }
+
+    private func assignSelectedCandidate(direction: PrimaryDirection, slot: Int) {
+        let filteredIndices = uiState.assignmentFilteredIndices
+        guard !filteredIndices.isEmpty else {
+            cancelAssignmentMode(direction: direction)
+            return
+        }
+
+        let selectedIndex = filteredIndices.contains(uiState.assignmentSelectedIndex)
+            ? uiState.assignmentSelectedIndex
+            : filteredIndices[0]
+        let selected = uiState.assignmentCandidates[selectedIndex]
+        wheelProvider.setPath(selected.appURL, for: direction, slot: slot)
+        wheelProvider.setMainSlot(slot, for: direction)
+        wheelProvider.refreshSnapshot()
+
+        uiState.assignmentCandidates = []
+        uiState.assignmentSelectedIndex = 0
+        uiState.assignmentFilteredIndices = []
+        uiState.assignmentQuery = ""
+        uiState.assignmentCursorIndex = 0
+        uiState.displayPhase = .submenu(direction)
+        uiState.highlightedPrimary = direction
+        uiState.highlightedSubmenuSlot = slot
+    }
+
+    private func performStandardSelection(direction: PrimaryDirection, slot: Int, submenuSlot: Int? = nil) {
+        queuePendingActivation(direction: direction, slot: slot)
+        let target: SelectionTarget
+        if let submenuSlot {
+            target = .submenu(direction: direction, slot: submenuSlot)
+        } else {
+            target = .primary(direction)
+        }
+        _ = startSelectionSequence(target: target, stopLocalMonitoring: true, includesFadeOut: true) { [weak self] in
+            self?.finishSelectionClose()
+        }
+    }
+
+    @discardableResult
+    private func startSelectionSequence(
+        target: SelectionTarget,
+        stopLocalMonitoring: Bool,
+        includesFadeOut: Bool,
+        onComplete: @escaping () -> Void
+    ) -> Bool {
+        guard uiState.isVisible else {
+            return false
+        }
+        guard uiState.animationPhase != .selecting && uiState.animationPhase != .closing else {
+            return false
+        }
+
+        if stopLocalMonitoring {
+            stopLocalKeyMonitor()
+        }
+        cancelPendingPrimary()
+        cancelSelectionCloseSequence()
+
+        applySelectionTarget(target)
+        uiState.selectionFX = SelectionFX(
+            selectedTarget: target,
+            flashCount: 0,
+            keepUnselectedPrimaryVisible: !includesFadeOut,
+            isDropping: false,
+            closeStartedAt: CACurrentMediaTime()
+        )
+        uiState.animationPhase = .selecting
+
+        scheduleSelectionFlickerSteps()
+        scheduleSelectionStep(after: selectionFeedbackDuration) { [weak self] in
+            guard let self else {
+                return
+            }
+            if includesFadeOut {
+                self.beginSelectionFadeOut(onComplete: onComplete)
+                return
+            }
+            self.cancelSelectionCloseSequence()
+            self.uiState.selectionFX = SelectionFX()
+            self.uiState.animationPhase = .idle
+            onComplete()
+        }
+        return true
+    }
+
+    private func applySelectionTarget(_ target: SelectionTarget) {
+        switch target {
+        case .primary(let direction):
+            uiState.highlightedPrimary = direction
+            uiState.highlightedSubmenuSlot = nil
+        case .submenu(let direction, let slot):
+            uiState.displayPhase = .submenu(direction)
+            uiState.highlightedPrimary = direction
+            uiState.highlightedSubmenuSlot = slot
+        }
+    }
+
+    private func beginSelectionFadeOut(onComplete: @escaping () -> Void) {
+        uiState.animationPhase = .closing
+        uiState.selectionFX.isDropping = false
+        scheduleSelectionStep(after: selectionFadeDuration) {
+            onComplete()
+        }
+    }
+
+    private func finishSelectionClose() {
+        cancelSelectionCloseSequence()
+        let activationDirection = pendingActivationDirection
+        let activationSlot = pendingActivationSlot
+        clearPendingActivation()
+        uiState.reset()
+        uiState.isVisible = false
+        window?.orderOut(nil)
+
+        if let activationDirection, let activationSlot {
+            wheelProvider.activate(direction: activationDirection, slot: activationSlot)
+        }
+    }
+
+    private func scheduleSelectionStep(after delay: TimeInterval, _ block: @escaping () -> Void) {
+        let workItem = DispatchWorkItem(block: block)
+        selectionWorkItems.append(workItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
+    }
+
+    private func scheduleSelectionFlickerSteps() {
+        for step in 1...selectionFlickerStepCount {
+            let delay = selectionLingerDuration + (selectionFlickerStepDuration * Double(step - 1))
+            scheduleSelectionStep(after: delay) { [weak self] in
+                self?.uiState.selectionFX.flashCount = step
+            }
+        }
+    }
+
+    private func cancelSelectionCloseSequence() {
+        for item in selectionWorkItems {
+            item.cancel()
+        }
+        selectionWorkItems.removeAll()
+    }
+
+    private func queuePendingActivation(direction: PrimaryDirection, slot: Int) {
+        pendingActivationDirection = direction
+        pendingActivationSlot = slot
+    }
+
+    private func clearPendingActivation() {
+        pendingActivationDirection = nil
+        pendingActivationSlot = nil
     }
 
     private func mapPrimaryDirection(keyCode: UInt16) -> PrimaryDirection? {

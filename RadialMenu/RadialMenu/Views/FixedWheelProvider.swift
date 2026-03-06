@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-import CoreGraphics
-import ScreenCaptureKit
 
 enum PrimaryDirection: String, CaseIterable {
     case top
@@ -37,6 +35,28 @@ enum PrimaryDirection: String, CaseIterable {
 enum WheelDisplayPhase: Equatable {
     case root
     case submenu(PrimaryDirection)
+    case assignment(direction: PrimaryDirection, slot: Int)
+}
+
+enum WheelAnimationPhase: Equatable {
+    case hidden
+    case opening
+    case idle
+    case selecting
+    case closing
+}
+
+enum SelectionTarget: Equatable {
+    case primary(PrimaryDirection)
+    case submenu(direction: PrimaryDirection, slot: Int)
+}
+
+struct SelectionFX: Equatable {
+    var selectedTarget: SelectionTarget?
+    var flashCount: Int = 0
+    var keepUnselectedPrimaryVisible = false
+    var isDropping = false
+    var closeStartedAt: CFTimeInterval?
 }
 
 struct WheelAppItem {
@@ -44,20 +64,59 @@ struct WheelAppItem {
     let bundleIdentifier: String?
     let displayName: String
     let icon: NSImage
-    let previewImage: NSImage?
     let isRunning: Bool
+}
+
+struct AssignmentCandidate: Identifiable {
+    let appURL: URL
+    let bundleIdentifier: String?
+    let displayName: String
+    let icon: NSImage
+    let isRunning: Bool
+
+    var id: String {
+        bundleIdentifier ?? appURL.path
+    }
 }
 
 class WheelUIState: ObservableObject {
     @Published var isVisible = false
-    @Published var phase: WheelDisplayPhase = .root
+    @Published var displayPhase: WheelDisplayPhase = .root
+    @Published var animationPhase: WheelAnimationPhase = .hidden
+    @Published var selectionFX = SelectionFX()
     @Published var highlightedPrimary: PrimaryDirection?
     @Published var highlightedSubmenuSlot: Int?
+    @Published var assignmentCandidates: [AssignmentCandidate] = []
+    @Published var assignmentSelectedIndex: Int = 0
+    @Published var assignmentFilteredIndices: [Int] = []
+    @Published var assignmentQuery: String = ""
+    @Published var assignmentCursorIndex: Int = 0
 
     func reset() {
-        phase = .root
+        displayPhase = .root
+        animationPhase = .hidden
+        selectionFX = SelectionFX()
         highlightedPrimary = nil
         highlightedSubmenuSlot = nil
+        assignmentCandidates = []
+        assignmentSelectedIndex = 0
+        assignmentFilteredIndices = []
+        assignmentQuery = ""
+        assignmentCursorIndex = 0
+    }
+
+    func resetForPresentation() {
+        isVisible = true
+        displayPhase = .root
+        animationPhase = .opening
+        selectionFX = SelectionFX()
+        highlightedPrimary = nil
+        highlightedSubmenuSlot = nil
+        assignmentCandidates = []
+        assignmentSelectedIndex = 0
+        assignmentFilteredIndices = []
+        assignmentQuery = ""
+        assignmentCursorIndex = 0
     }
 }
 
@@ -66,23 +125,24 @@ class FixedWheelProvider: ObservableObject {
     @Published private(set) var itemsByIndex: [Int: WheelAppItem?] = [:]
 
     private let appData: AppData
-    private let settings: AppSettings
 
-    init(appData: AppData, settings: AppSettings) {
+    init(appData: AppData) {
         self.appData = appData
-        self.settings = settings
         refreshSnapshot()
     }
 
     static func storageIndex(for direction: PrimaryDirection, slot: Int) -> Int {
-        let primaryIndex: Int
-        switch direction {
-        case .top: primaryIndex = 0
-        case .right: primaryIndex = 1
-        case .bottom: primaryIndex = 2
-        case .left: primaryIndex = 3
-        }
+        let primaryIndex = directionIndex(for: direction)
         return (primaryIndex * 2) + slot
+    }
+
+    static func directionIndex(for direction: PrimaryDirection) -> Int {
+        switch direction {
+        case .top: return 0
+        case .right: return 1
+        case .bottom: return 2
+        case .left: return 3
+        }
     }
 
     func setPath(_ url: URL?, for direction: PrimaryDirection, slot: Int) {
@@ -106,6 +166,25 @@ class FixedWheelProvider: ObservableObject {
     func item(for direction: PrimaryDirection, slot: Int) -> WheelAppItem? {
         let index = Self.storageIndex(for: direction, slot: slot)
         return itemsByIndex[index] ?? nil
+    }
+
+    func mainSlot(for direction: PrimaryDirection) -> Int {
+        let index = Self.directionIndex(for: direction)
+        guard appData.mainSlotByDirection.indices.contains(index) else {
+            return 0
+        }
+
+        let slot = appData.mainSlotByDirection[index]
+        return slot == 1 ? 1 : 0
+    }
+
+    func setMainSlot(_ slot: Int, for direction: PrimaryDirection) {
+        let index = Self.directionIndex(for: direction)
+        guard appData.mainSlotByDirection.indices.contains(index) else {
+            return
+        }
+
+        appData.mainSlotByDirection[index] = slot == 1 ? 1 : 0
     }
 
     func refreshSnapshot() {
@@ -132,13 +211,8 @@ class FixedWheelProvider: ObservableObject {
                     bundleIdentifier: bundleID,
                     displayName: appName,
                     icon: icon,
-                    previewImage: nil,
                     isRunning: runningApp != nil
                 )
-
-                if settings.isLiveWindowPreviewEnabled, let bundleID, runningApp != nil {
-                    loadPreviewImage(bundleIdentifier: bundleID, index: index)
-                }
             }
         }
 
@@ -160,78 +234,116 @@ class FixedWheelProvider: ObservableObject {
         NSWorkspace.shared.openApplication(at: item.appURL, configuration: configuration, completionHandler: nil)
     }
 
-    func promoteToMainIfNeeded(direction: PrimaryDirection, slot: Int) {
-        guard slot == 1 else {
-            return
+    func assignmentCandidates() -> [AssignmentCandidate] {
+        var candidatesByID: [String: AssignmentCandidate] = [:]
+        var candidateIdentityByID: [String: String] = [:]
+        var runningBundleIDs = Set<String>()
+        var runningAppPaths = Set<String>()
+
+        for app in NSWorkspace.shared.runningApplications where !app.isTerminated {
+            if let bundleID = app.bundleIdentifier {
+                runningBundleIDs.insert(bundleID)
+            }
+            if let bundleURL = app.bundleURL {
+                runningAppPaths.insert(bundleURL.standardizedFileURL.path.lowercased())
+            }
         }
 
-        let mainIndex = Self.storageIndex(for: direction, slot: 0)
-        let alternateIndex = Self.storageIndex(for: direction, slot: 1)
+        let fileManager = FileManager.default
+        for rootURL in assignmentSearchRoots() {
+            guard let enumerator = fileManager.enumerator(
+                at: rootURL,
+                includingPropertiesForKeys: [.isDirectoryKey, .isApplicationKey],
+                options: [.skipsHiddenFiles, .skipsPackageDescendants],
+                errorHandler: nil
+            ) else {
+                continue
+            }
 
-        guard appData.appPaths.indices.contains(mainIndex), appData.appPaths.indices.contains(alternateIndex) else {
-            return
+            for case let discoveredURL as URL in enumerator {
+                guard discoveredURL.pathExtension.lowercased() == "app" else {
+                    continue
+                }
+                let appURL = discoveredURL.standardizedFileURL
+                let bundle = Bundle(url: appURL)
+                let bundleID = bundle?.bundleIdentifier
+                let appName = (bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String)
+                    ?? (bundle?.object(forInfoDictionaryKey: "CFBundleName") as? String)
+                    ?? appURL.deletingPathExtension().lastPathComponent
+
+                guard shouldIncludeAssignmentApp(bundle: bundle, appURL: appURL, displayName: appName) else {
+                    continue
+                }
+
+                let identity = assignmentIdentity(bundleID: bundleID, appURL: appURL)
+                if candidateIdentityByID.values.contains(identity) {
+                    continue
+                }
+
+                let isRunning = bundleID.map { runningBundleIDs.contains($0) }
+                    ?? runningAppPaths.contains(appURL.path.lowercased())
+                let candidate = AssignmentCandidate(
+                    appURL: appURL,
+                    bundleIdentifier: bundleID,
+                    displayName: appName,
+                    icon: NSWorkspace.shared.icon(forFile: appURL.path),
+                    isRunning: isRunning
+                )
+                if candidatesByID[candidate.id] == nil {
+                    candidatesByID[candidate.id] = candidate
+                    candidateIdentityByID[candidate.id] = identity
+                }
+            }
         }
 
-        let currentMain = appData.appPaths[mainIndex]
-        appData.appPaths[mainIndex] = appData.appPaths[alternateIndex]
-        appData.appPaths[alternateIndex] = currentMain
+        return candidatesByID.values.sorted {
+            $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+        }
     }
 
-    private func loadPreviewImage(bundleIdentifier: String, index: Int) {
-        guard #available(macOS 14.0, *), settings.isLiveWindowPreviewEnabled, CGPreflightScreenCaptureAccess() else {
-            return
+    private func assignmentSearchRoots() -> [URL] {
+        let fileManager = FileManager.default
+        let masks: [FileManager.SearchPathDomainMask] = [.localDomainMask, .systemDomainMask, .userDomainMask]
+        var seenPaths = Set<String>()
+        var roots: [URL] = []
+
+        for mask in masks {
+            for url in fileManager.urls(for: .applicationDirectory, in: mask) {
+                let path = url.standardizedFileURL.path.lowercased()
+                if seenPaths.insert(path).inserted {
+                    roots.append(url)
+                }
+            }
         }
-
-        Task { [weak self] in
-            guard let self else {
-                return
-            }
-
-            guard
-                let image = try? await Self.captureWindowPreviewImage(bundleIdentifier: bundleIdentifier)
-            else {
-                return
-            }
-
-            guard
-                let existing = self.itemsByIndex[index] ?? nil,
-                existing.bundleIdentifier == bundleIdentifier,
-                self.settings.isLiveWindowPreviewEnabled
-            else {
-                return
-            }
-
-            self.itemsByIndex[index] = WheelAppItem(
-                appURL: existing.appURL,
-                bundleIdentifier: existing.bundleIdentifier,
-                displayName: existing.displayName,
-                icon: existing.icon,
-                previewImage: image,
-                isRunning: existing.isRunning
-            )
-        }
+        return roots
     }
 
-    @available(macOS 14.0, *)
-    private static func captureWindowPreviewImage(bundleIdentifier: String) async throws -> NSImage? {
-        let content = try await SCShareableContent.current
+    private func assignmentIdentity(bundleID: String?, appURL: URL) -> String {
+        if let bundleID, !bundleID.isEmpty {
+            return "bundle:\(bundleID.lowercased())"
+        }
+        return "path:\(appURL.standardizedFileURL.path.lowercased())"
+    }
 
-        guard
-            let window = content.windows.first(where: {
-                $0.owningApplication?.bundleIdentifier == bundleIdentifier &&
-                $0.windowLayer == 0 &&
-                $0.isOnScreen
-            })
-        else {
-            return nil
+    private func shouldIncludeAssignmentApp(bundle: Bundle?, appURL: URL, displayName: String) -> Bool {
+        if appURL.lastPathComponent.hasSuffix("Helper.app") {
+            return false
         }
 
-        let filter = SCContentFilter(desktopIndependentWindow: window)
-        let configuration = SCStreamConfiguration()
-        configuration.width = max(Int(window.frame.width), 320)
-        configuration.height = max(Int(window.frame.height), 180)
+        if let backgroundOnly = bundle?.object(forInfoDictionaryKey: "LSBackgroundOnly") as? Bool, backgroundOnly {
+            return false
+        }
 
-        let cgImage = try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: configuration)
-        return NSImage(cgImage: cgImage, size: .zero)
+        let loweredName = displayName.lowercased()
+        if loweredName.hasSuffix(" helper") || loweredName.contains(" login item") {
+            return false
+        }
+
+        if let bundleID = bundle?.bundleIdentifier?.lowercased(),
+           bundleID.contains(".helper") || bundleID.contains(".loginitem") {
+            return false
+        }
+
+        return true
     }
 }
