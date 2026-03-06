@@ -8,10 +8,12 @@
 import SwiftUI
 
 // MARK: Preliminary information setup
-class AppData: ObservableObject {
+final class AppData: ObservableObject {
     static let slotCount = 8
+    static let primaryDirectionCount = 4
     static let schemaVersionKey = "wheelSchemaVersion"
     static let schemaVersion = 2
+    static let mainSlotPointersKey = "mainSlotByDirection"
 
     @Published var appPaths: [URL?] {
         didSet {
@@ -19,9 +21,16 @@ class AppData: ObservableObject {
             saveToUserDefaults()
         }
     }
+    @Published var mainSlotByDirection: [Int] {
+        didSet {
+            normalizeMainSlotPointers()
+            saveToUserDefaults()
+        }
+    }
 
     init() {
         self.appPaths = Array(repeating: nil, count: Self.slotCount)
+        self.mainSlotByDirection = Array(repeating: 0, count: Self.primaryDirectionCount)
         loadFromUserDefaults()
     }
 
@@ -36,10 +45,16 @@ class AppData: ObservableObject {
     private func saveToUserDefaults() {
         let pathsAsString = appPaths.map { $0?.absoluteString ?? "" }
         UserDefaults.standard.set(pathsAsString, forKey: "appPaths")
+        UserDefaults.standard.set(mainSlotByDirection, forKey: Self.mainSlotPointersKey)
         UserDefaults.standard.set(Self.schemaVersion, forKey: Self.schemaVersionKey)
     }
 
     private func loadFromUserDefaults() {
+        if let storedMainSlots = UserDefaults.standard.array(forKey: Self.mainSlotPointersKey) as? [Int] {
+            mainSlotByDirection = storedMainSlots
+        }
+        normalizeMainSlotPointers()
+
         guard let pathsAsString = UserDefaults.standard.array(forKey: "appPaths") as? [String] else {
             return
         }
@@ -57,6 +72,20 @@ class AppData: ObservableObject {
             appPaths = Array(loaded.prefix(Self.slotCount))
         } else {
             appPaths = loaded + Array(repeating: nil, count: Self.slotCount - loaded.count)
+        }
+    }
+
+    private func normalizeMainSlotPointers() {
+        if mainSlotByDirection.count > Self.primaryDirectionCount {
+            mainSlotByDirection = Array(mainSlotByDirection.prefix(Self.primaryDirectionCount))
+        } else if mainSlotByDirection.count < Self.primaryDirectionCount {
+            mainSlotByDirection += Array(repeating: 0, count: Self.primaryDirectionCount - mainSlotByDirection.count)
+        }
+
+        for index in mainSlotByDirection.indices {
+            if mainSlotByDirection[index] != 0 && mainSlotByDirection[index] != 1 {
+                mainSlotByDirection[index] = 0
+            }
         }
     }
 
@@ -101,22 +130,22 @@ func fetchAppIcons(appPaths: [URL?]) -> [NSImage?] {
     }
 }
 
-class AppSettings: ObservableObject {
+final class AppSettings: ObservableObject {
     @Published var isShortcutEnabled: Bool {
         didSet {
             UserDefaults.standard.set(isShortcutEnabled, forKey: "isShortcutEnabled")
         }
     }
 
-    @Published var isLiveWindowPreviewEnabled: Bool {
+    @Published var forceWheelAnimations: Bool {
         didSet {
-            UserDefaults.standard.set(isLiveWindowPreviewEnabled, forKey: "isLiveWindowPreviewEnabled")
+            UserDefaults.standard.set(forceWheelAnimations, forKey: "forceWheelAnimations")
         }
     }
 
     init() {
         isShortcutEnabled = UserDefaults.standard.object(forKey: "isShortcutEnabled") as? Bool ?? true
-        isLiveWindowPreviewEnabled = UserDefaults.standard.object(forKey: "isLiveWindowPreviewEnabled") as? Bool ?? false
+        forceWheelAnimations = UserDefaults.standard.object(forKey: "forceWheelAnimations") as? Bool ?? true
     }
 }
 
@@ -164,7 +193,7 @@ struct GeneralSettingsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
 
-                Toggle("Use live window previews (Screen Recording permission required)", isOn: $settings.isLiveWindowPreviewEnabled)
+                Toggle("Enable wheel animations even when macOS Reduce Motion is on", isOn: $settings.forceWheelAnimations)
                     .toggleStyle(.switch)
 
                 directionSection(title: "Top (W / ↑)", primary: .top)
@@ -174,6 +203,7 @@ struct GeneralSettingsView: View {
 
                 Button("Clear All Mappings") {
                     appData.appPaths = Array(repeating: nil, count: AppData.slotCount)
+                    appData.mainSlotByDirection = Array(repeating: 0, count: AppData.primaryDirectionCount)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(.red)

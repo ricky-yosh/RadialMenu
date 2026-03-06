@@ -11,36 +11,41 @@ let sharedAppData = AppData()
 
 @main
 struct RadialMenuApp: App {
-    var windowController: WindowController?
-    var wheelProvider: FixedWheelProvider
-    var wheelUIState: WheelUIState
-    var settings = AppSettings()
+    private var windowController: WindowController?
+    private let wheelProvider: FixedWheelProvider
+    private let wheelUIState: WheelUIState
+    private let settings = AppSettings()
 
     var body: some Scene {
         MenuBarExtra("Radial Menu App", systemImage: "circle.dashed") {
             AppMenuBarItems(settings: settings)
-                .environmentObject(sharedAppData)  // Provide to keep track of app shortcuts
+                .environmentObject(sharedAppData)
         }
         Settings {
             SettingsView(settings: settings)
-                .environmentObject(sharedAppData)  // Provide to keep track of app shortcuts
+                .environmentObject(sharedAppData)
         }
         Window("About", id: "about-view") {
             AboutView()
         }
         .windowResizability(.contentSize)
     }
-    
-    init()
-    {
-        self.wheelProvider = FixedWheelProvider(appData: sharedAppData, settings: settings)
-        self.wheelUIState = WheelUIState()
 
-        // Create the SwiftUI view with the environment object
-        let radialMenuView = RadialMenuView(wheelProvider: wheelProvider, uiState: wheelUIState)
+    init() {
+        wheelProvider = FixedWheelProvider(appData: sharedAppData)
+        wheelUIState = WheelUIState()
 
-        // Now create the NSHostingView with the radialMenuView
+        let radialMenuView = RadialMenuView(
+            wheelProvider: wheelProvider,
+            uiState: wheelUIState,
+            settings: settings
+        )
         let contentView = NSHostingView(rootView: radialMenuView)
-        windowController = WindowController(contentView: contentView, settings: settings, wheelProvider: wheelProvider, uiState: wheelUIState)
+        windowController = WindowController(
+            contentView: contentView,
+            settings: settings,
+            wheelProvider: wheelProvider,
+            uiState: wheelUIState
+        )
     }
 }
