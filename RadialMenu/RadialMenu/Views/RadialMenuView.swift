@@ -12,6 +12,7 @@ struct RadialMenuView: View {
     @ObservedObject var uiState: WheelUIState
     @ObservedObject var settings: AppSettings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @FocusState private var isAssignmentSearchFocused: Bool
 
     private let primaryRadialOffset: CGFloat = 130
     private let primaryNodeSize = CGSize(width: 112, height: 112)
@@ -20,9 +21,11 @@ struct RadialMenuView: View {
     private let submenuPrimaryPushDistance: CGFloat = 96
     private let submenuPrimaryOpacity: Double = 0.52
     private let wheelFrameSize = CGSize(width: 920, height: 820)
-    private let assignmentBackgroundScale: CGFloat = 0.88
-    private let assignmentBackgroundOpacity: Double = 0.72
+    private let assignmentBackgroundScale: CGFloat = 0.9
+    private let assignmentBackgroundOpacity: Double = 0.84
     private let assignmentBackgroundTween: Double = 0.18
+    private let backdropMaterialOpacity: Double = 0.62
+    private let backdropTintOpacity: Double = 0.14
 
     var body: some View {
         ZStack {
@@ -58,6 +61,15 @@ struct RadialMenuView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.clear)
         .animation(.easeOut(duration: shouldAnimateWheel ? 0.2 : 0.01), value: uiState.animationPhase)
+        .onChange(of: uiState.displayPhase) { _, phase in
+            if case .assignment = phase {
+                DispatchQueue.main.async {
+                    isAssignmentSearchFocused = true
+                }
+            } else {
+                isAssignmentSearchFocused = false
+            }
+        }
     }
 
     private var shouldAnimateWheel: Bool {
@@ -236,8 +248,8 @@ struct RadialMenuView: View {
         ZStack {
             Rectangle()
                 .fill(.ultraThinMaterial)
-                .opacity(0.95)
-            Color.black.opacity(0.28)
+                .opacity(backdropMaterialOpacity)
+            Color.black.opacity(backdropTintOpacity)
         }
         .ignoresSafeArea()
         .opacity(uiState.animationPhase == .hidden ? 0 : 1)
@@ -369,63 +381,41 @@ struct RadialMenuView: View {
     private func assignmentPicker(direction: PrimaryDirection) -> some View {
         let candidates = uiState.assignmentCandidates
         let filteredIndices = uiState.assignmentFilteredIndices
-        let selectedIndex = filteredIndices.contains(uiState.assignmentSelectedIndex)
-            ? uiState.assignmentSelectedIndex
-            : (filteredIndices.first ?? -1)
-        let visibleIndices = visibleAssignmentIndices(
-            filteredIndices: filteredIndices,
-            selectedCandidateIndex: selectedIndex,
-            maxCount: 7
+        let selectedIndex = filteredIndices.contains(uiState.assignmentSelectedIndex) ? uiState.assignmentSelectedIndex : nil
+        let selectionBinding = Binding<Int?>(
+            get: { selectedIndex },
+            set: { newValue in
+                if let newValue {
+                    uiState.assignmentSelectedIndex = newValue
+                }
+            }
         )
-        let query = uiState.assignmentQuery
-        let queryCount = query.count
-        let cursorIndex = max(0, min(uiState.assignmentCursorIndex, queryCount))
-        let cursorStringIndex = query.index(query.startIndex, offsetBy: cursorIndex)
-        let leadingQuery = String(query[..<cursorStringIndex])
-        let trailingQuery = String(query[cursorStringIndex...])
 
         return VStack(alignment: .leading, spacing: 10) {
             Text("Assign \(direction.title)")
                 .font(.headline)
-            HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                if query.isEmpty {
-                    HStack(spacing: 0) {
-                        Rectangle()
-                            .fill(Color.primary.opacity(0.92))
-                            .frame(width: 1, height: 14)
-                        Text("Search apps...")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-                } else {
-                    (Text(leadingQuery)
-                        .font(.subheadline)
-                        .foregroundStyle(.primary)
-                     + Text("|")
-                        .font(.subheadline)
-                        .foregroundStyle(.primary.opacity(0.92))
-                     + Text(trailingQuery)
-                        .font(.subheadline)
-                        .foregroundStyle(.primary))
-                    .lineLimit(1)
+            TextField("Search apps...", text: $uiState.assignmentQuery)
+                .textFieldStyle(.roundedBorder)
+                .focused($isAssignmentSearchFocused)
+                .onChange(of: uiState.assignmentQuery) { _, _ in
+                    uiState.refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
                 }
-                Spacer()
-                Text("\(filteredIndices.count)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(Color.white.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
 
-            Text("Type to search • \u{2190}/\u{2192} cursor • \u{2191}/\u{2193} move • Enter assign • Esc clear/back")
+            Text("Type to search • \u{2191}/\u{2193} move • Enter assign • Esc clear/back")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
 
-            if candidates.isEmpty {
-                Text("No apps found")
+            if uiState.assignmentIsLoading && candidates.isEmpty {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Loading apps…")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 10)
+            } else if candidates.isEmpty {
+                Text("No installed apps found")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
@@ -435,19 +425,30 @@ struct RadialMenuView: View {
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
             } else {
-                ForEach(visibleIndices, id: \.self) { index in
+                List(filteredIndices, id: \.self, selection: selectionBinding) { index in
                     assignmentRow(candidate: candidates[index], isSelected: index == selectedIndex)
+                        .tag(index)
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 220, maxHeight: 280)
+                .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 10))
             }
         }
         .padding(14)
-        .frame(width: 360, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .frame(width: 390, alignment: .leading)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14))
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                .stroke(Color.white.opacity(0.26), lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.24), radius: 22, x: 0, y: 12)
+        .shadow(color: Color.black.opacity(0.16), radius: 16, x: 0, y: 10)
+        .onAppear {
+            DispatchQueue.main.async {
+                isAssignmentSearchFocused = true
+            }
+            uiState.refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+        }
     }
 
     private func assignmentRow(candidate: AssignmentCandidate, isSelected: Bool) -> some View {
@@ -476,21 +477,6 @@ struct RadialMenuView: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(isSelected ? Color.white.opacity(0.65) : Color.clear, lineWidth: 1)
         )
-    }
-
-    private func visibleAssignmentIndices(filteredIndices: [Int], selectedCandidateIndex: Int, maxCount: Int) -> [Int] {
-        guard !filteredIndices.isEmpty else {
-            return []
-        }
-
-        let selectedWindowIndex = filteredIndices.firstIndex(of: selectedCandidateIndex) ?? 0
-        let half = maxCount / 2
-        var start = max(0, selectedWindowIndex - half)
-        let end = min(filteredIndices.count, start + maxCount)
-        if end - start < maxCount {
-            start = max(0, end - maxCount)
-        }
-        return Array(filteredIndices[start..<end])
     }
 
     private func submenuSelectionFadeOffset(direction: PrimaryDirection, slot: Int) -> CGSize {

@@ -90,7 +90,7 @@ class WheelUIState: ObservableObject {
     @Published var assignmentSelectedIndex: Int = 0
     @Published var assignmentFilteredIndices: [Int] = []
     @Published var assignmentQuery: String = ""
-    @Published var assignmentCursorIndex: Int = 0
+    @Published var assignmentIsLoading: Bool = false
 
     func reset() {
         displayPhase = .root
@@ -102,7 +102,7 @@ class WheelUIState: ObservableObject {
         assignmentSelectedIndex = 0
         assignmentFilteredIndices = []
         assignmentQuery = ""
-        assignmentCursorIndex = 0
+        assignmentIsLoading = false
     }
 
     func resetForPresentation() {
@@ -116,7 +116,37 @@ class WheelUIState: ObservableObject {
         assignmentSelectedIndex = 0
         assignmentFilteredIndices = []
         assignmentQuery = ""
-        assignmentCursorIndex = 0
+        assignmentIsLoading = false
+    }
+
+    func refreshAssignmentFilter(preferredSelectionIndex: Int? = nil) {
+        let query = assignmentQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        let candidates = assignmentCandidates
+
+        if query.isEmpty {
+            assignmentFilteredIndices = Array(candidates.indices)
+        } else {
+            assignmentFilteredIndices = candidates.indices.filter {
+                candidates[$0].displayName.localizedCaseInsensitiveContains(query)
+            }
+        }
+
+        guard !assignmentFilteredIndices.isEmpty else {
+            assignmentSelectedIndex = 0
+            return
+        }
+
+        if let preferredSelectionIndex,
+           assignmentFilteredIndices.contains(preferredSelectionIndex) {
+            assignmentSelectedIndex = preferredSelectionIndex
+            return
+        }
+
+        if assignmentFilteredIndices.contains(assignmentSelectedIndex) {
+            return
+        }
+
+        assignmentSelectedIndex = assignmentFilteredIndices[0]
     }
 }
 
@@ -125,10 +155,13 @@ class FixedWheelProvider: ObservableObject {
     @Published private(set) var itemsByIndex: [Int: WheelAppItem?] = [:]
 
     private let appData: AppData
+    private var cachedAssignmentCandidates: [AssignmentCandidate] = []
+    private var assignmentLoadTask: Task<Void, Never>?
 
     init(appData: AppData) {
         self.appData = appData
         refreshSnapshot()
+        refreshAssignmentCandidates(force: true)
     }
 
     static func storageIndex(for direction: PrimaryDirection, slot: Int) -> Int {
@@ -234,7 +267,36 @@ class FixedWheelProvider: ObservableObject {
         NSWorkspace.shared.openApplication(at: item.appURL, configuration: configuration, completionHandler: nil)
     }
 
+    deinit {
+        assignmentLoadTask?.cancel()
+    }
+
     func assignmentCandidates() -> [AssignmentCandidate] {
+        cachedAssignmentCandidates
+    }
+
+    func refreshAssignmentCandidates(force: Bool = false, onUpdate: (([AssignmentCandidate]) -> Void)? = nil) {
+        if !force && !cachedAssignmentCandidates.isEmpty {
+            onUpdate?(cachedAssignmentCandidates)
+            return
+        }
+
+        assignmentLoadTask?.cancel()
+        assignmentLoadTask = Task { [weak self] in
+            let loaded = await Task.detached(priority: .utility) {
+                Self.discoverAssignmentCandidates()
+            }.value
+
+            guard let self, !Task.isCancelled else {
+                return
+            }
+
+            self.cachedAssignmentCandidates = loaded
+            onUpdate?(loaded)
+        }
+    }
+
+    nonisolated private static func discoverAssignmentCandidates() -> [AssignmentCandidate] {
         var candidatesByID: [String: AssignmentCandidate] = [:]
         var candidateIdentityByID: [String: String] = [:]
         var runningBundleIDs = Set<String>()
@@ -301,7 +363,7 @@ class FixedWheelProvider: ObservableObject {
         }
     }
 
-    private func assignmentSearchRoots() -> [URL] {
+    nonisolated private static func assignmentSearchRoots() -> [URL] {
         let fileManager = FileManager.default
         let masks: [FileManager.SearchPathDomainMask] = [.localDomainMask, .systemDomainMask, .userDomainMask]
         var seenPaths = Set<String>()
@@ -318,14 +380,14 @@ class FixedWheelProvider: ObservableObject {
         return roots
     }
 
-    private func assignmentIdentity(bundleID: String?, appURL: URL) -> String {
+    nonisolated private static func assignmentIdentity(bundleID: String?, appURL: URL) -> String {
         if let bundleID, !bundleID.isEmpty {
             return "bundle:\(bundleID.lowercased())"
         }
         return "path:\(appURL.standardizedFileURL.path.lowercased())"
     }
 
-    private func shouldIncludeAssignmentApp(bundle: Bundle?, appURL: URL, displayName: String) -> Bool {
+    nonisolated private static func shouldIncludeAssignmentApp(bundle: Bundle?, appURL: URL, displayName: String) -> Bool {
         if appURL.lastPathComponent.hasSuffix("Helper.app") {
             return false
         }

@@ -469,22 +469,32 @@ class WindowController: NSWindowController {
         let candidates = wheelProvider.assignmentCandidates()
         uiState.assignmentCandidates = candidates
         uiState.assignmentQuery = ""
-        uiState.assignmentCursorIndex = 0
-        uiState.assignmentFilteredIndices = []
-
-        let currentPath = wheelProvider.path(for: direction, slot: slot)
-        if let currentPath,
-           let index = candidates.firstIndex(where: { $0.appURL.path == currentPath.path }) {
-            uiState.assignmentSelectedIndex = index
-        } else {
-            uiState.assignmentSelectedIndex = 0
-        }
-        refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+        uiState.assignmentIsLoading = candidates.isEmpty
+        refreshAssignmentSelection(direction: direction, slot: slot, preferredSelectionIndex: nil)
 
         clearPendingActivation()
         uiState.displayPhase = .assignment(direction: direction, slot: slot)
         uiState.highlightedPrimary = direction
         uiState.highlightedSubmenuSlot = slot
+
+        wheelProvider.refreshAssignmentCandidates(force: candidates.isEmpty) { [weak self] loadedCandidates in
+            guard let self else {
+                return
+            }
+            guard case .assignment(let activeDirection, let activeSlot) = self.uiState.displayPhase,
+                  activeDirection == direction,
+                  activeSlot == slot else {
+                return
+            }
+
+            self.uiState.assignmentCandidates = loadedCandidates
+            self.uiState.assignmentIsLoading = false
+            self.refreshAssignmentSelection(
+                direction: direction,
+                slot: slot,
+                preferredSelectionIndex: self.uiState.assignmentSelectedIndex
+            )
+        }
     }
 
     private func cancelAssignmentMode(direction: PrimaryDirection) {
@@ -492,7 +502,7 @@ class WindowController: NSWindowController {
         uiState.assignmentSelectedIndex = 0
         uiState.assignmentFilteredIndices = []
         uiState.assignmentQuery = ""
-        uiState.assignmentCursorIndex = 0
+        uiState.assignmentIsLoading = false
         uiState.displayPhase = .submenu(direction)
         uiState.highlightedPrimary = direction
         uiState.highlightedSubmenuSlot = nil
@@ -504,8 +514,7 @@ class WindowController: NSWindowController {
                 cancelAssignmentMode(direction: direction)
             } else {
                 uiState.assignmentQuery = ""
-                uiState.assignmentCursorIndex = 0
-                refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+                uiState.refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
             }
             return nil
         }
@@ -515,38 +524,13 @@ class WindowController: NSWindowController {
             return nil
         }
 
-        if event.keyCode == 123 { // Left
-            moveAssignmentCursor(by: -1)
-            return nil
-        }
-
-        if event.keyCode == 124 { // Right
-            moveAssignmentCursor(by: 1)
-            return nil
-        }
-
-        if event.keyCode == 51 { // Delete (Backspace)
-            removeAssignmentCharacterBeforeCursor()
-            return nil
-        }
-
-        if event.keyCode == 117 { // Forward Delete
-            removeAssignmentCharacterAtCursor()
-            return nil
-        }
-
         let delta = assignmentNavigationDelta(for: event.keyCode)
         if delta != 0 {
             moveAssignmentSelection(by: delta)
             return nil
         }
 
-        if let character = assignmentSearchCharacter(from: event) {
-            insertAssignmentCharacter(character)
-            return nil
-        }
-
-        return nil
+        return event
     }
 
     private func assignmentNavigationDelta(for keyCode: UInt16) -> Int {
@@ -560,110 +544,19 @@ class WindowController: NSWindowController {
         }
     }
 
-    private func assignmentSearchCharacter(from event: NSEvent) -> Character? {
-        if event.modifierFlags.contains(.command)
-            || event.modifierFlags.contains(.option)
-            || event.modifierFlags.contains(.control) {
-            return nil
-        }
-
-        guard let text = event.charactersIgnoringModifiers,
-              text.count == 1,
-              let char = text.first else {
-            return nil
-        }
-
-        if char.isNewline || char.isWhitespace {
-            return nil
-        }
-
-        if char.isASCII, let scalar = char.unicodeScalars.first, scalar.value < 32 {
-            return nil
-        }
-
-        return char
-    }
-
-    private func refreshAssignmentFilter(preferredSelectionIndex: Int?) {
-        clampAssignmentCursor()
-        let query = uiState.assignmentQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+    private func refreshAssignmentSelection(
+        direction: PrimaryDirection,
+        slot: Int,
+        preferredSelectionIndex: Int?
+    ) {
         let candidates = uiState.assignmentCandidates
-
-        if query.isEmpty {
-            uiState.assignmentFilteredIndices = Array(candidates.indices)
-        } else {
-            uiState.assignmentFilteredIndices = candidates.indices.filter {
-                candidates[$0].displayName.localizedCaseInsensitiveContains(query)
-            }
+        let currentPath = wheelProvider.path(for: direction, slot: slot)
+        let selectedIndexFromPath = currentPath.flatMap { path in
+            candidates.firstIndex(where: { $0.appURL.path == path.path })
         }
 
-        guard !uiState.assignmentFilteredIndices.isEmpty else {
-            uiState.assignmentSelectedIndex = 0
-            return
-        }
-
-        if let preferredSelectionIndex,
-           uiState.assignmentFilteredIndices.contains(preferredSelectionIndex) {
-            uiState.assignmentSelectedIndex = preferredSelectionIndex
-            return
-        }
-
-        if uiState.assignmentFilteredIndices.contains(uiState.assignmentSelectedIndex) {
-            return
-        }
-
-        uiState.assignmentSelectedIndex = uiState.assignmentFilteredIndices[0]
-    }
-
-    private func assignmentQueryCharacterCount() -> Int {
-        uiState.assignmentQuery.count
-    }
-
-    private func assignmentQueryIndex(at characterOffset: Int) -> String.Index {
-        let clampedOffset = max(0, min(characterOffset, assignmentQueryCharacterCount()))
-        return uiState.assignmentQuery.index(uiState.assignmentQuery.startIndex, offsetBy: clampedOffset)
-    }
-
-    private func clampAssignmentCursor() {
-        uiState.assignmentCursorIndex = max(0, min(uiState.assignmentCursorIndex, assignmentQueryCharacterCount()))
-    }
-
-    private func moveAssignmentCursor(by delta: Int) {
-        uiState.assignmentCursorIndex += delta
-        clampAssignmentCursor()
-    }
-
-    private func insertAssignmentCharacter(_ character: Character) {
-        clampAssignmentCursor()
-        let insertionIndex = assignmentQueryIndex(at: uiState.assignmentCursorIndex)
-        uiState.assignmentQuery.insert(character, at: insertionIndex)
-        uiState.assignmentCursorIndex += 1
-        refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
-    }
-
-    private func removeAssignmentCharacterBeforeCursor() {
-        clampAssignmentCursor()
-        guard uiState.assignmentCursorIndex > 0 else {
-            return
-        }
-
-        let removalStart = assignmentQueryIndex(at: uiState.assignmentCursorIndex - 1)
-        let removalEnd = assignmentQueryIndex(at: uiState.assignmentCursorIndex)
-        uiState.assignmentQuery.removeSubrange(removalStart..<removalEnd)
-        uiState.assignmentCursorIndex -= 1
-        refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
-    }
-
-    private func removeAssignmentCharacterAtCursor() {
-        clampAssignmentCursor()
-        guard uiState.assignmentCursorIndex < assignmentQueryCharacterCount() else {
-            return
-        }
-
-        let removalStart = assignmentQueryIndex(at: uiState.assignmentCursorIndex)
-        let removalEnd = assignmentQueryIndex(at: uiState.assignmentCursorIndex + 1)
-        uiState.assignmentQuery.removeSubrange(removalStart..<removalEnd)
-        refreshAssignmentFilter(preferredSelectionIndex: uiState.assignmentSelectedIndex)
+        let preferred = selectedIndexFromPath ?? preferredSelectionIndex
+        uiState.refreshAssignmentFilter(preferredSelectionIndex: preferred)
     }
 
     private func moveAssignmentSelection(by delta: Int) {
@@ -696,7 +589,7 @@ class WindowController: NSWindowController {
         uiState.assignmentSelectedIndex = 0
         uiState.assignmentFilteredIndices = []
         uiState.assignmentQuery = ""
-        uiState.assignmentCursorIndex = 0
+        uiState.assignmentIsLoading = false
         uiState.displayPhase = .submenu(direction)
         uiState.highlightedPrimary = direction
         uiState.highlightedSubmenuSlot = slot
